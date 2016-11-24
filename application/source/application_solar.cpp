@@ -4,6 +4,7 @@
 #include "utils.hpp"
 #include "shader_loader.hpp"
 #include "model_loader.hpp"
+#include "texture_loader.hpp"
 
 #include <glbinding/gl/gl.h>
 // use gl definitions from glbinding 
@@ -95,18 +96,30 @@ model_object planet_o{};
 //needed new model_object for stars
 model_object star{};
 
+pixel_data texture_mercury{};
+pixel_data texture_venus{};
+pixel_data texture_earth{};
+pixel_data texture_mars{};
+pixel_data texture_jupiter{};
+pixel_data texture_saturn{};
+pixel_data texture_uranus{};
+pixel_data texture_neptune{};
+pixel_data texture_sun{};
+pixel_data texture_moon{};
+//GLuint texture_object = 0;
+
 //please find declaration of struct "planet" in framework/include/structs.hpp
-planet mercury_properties{mercury_model, planet_o, "Mercury",  0.3f, 0, 2.0f, 0.4314, 0.5412, 0.4941};
-planet venus_properties{venus_model, planet_o, "Venus", 0.4f, 1, 6.0f, 0.5686, 0.3529, 0.0f};
-planet earth_properties{earth_model, planet_o, "Earth", 0.5f, 2, 9.0f, 0.2824, 0.2706, 0.6902};
-planet mars_properties{mars_model, planet_o, "Mars", 0.3f, 3, 14.0f, 0.4588, 0.4549, 0.1255};
-planet jupiter_properties{jupiter_model, planet_o, "Jupiter", 1.6f, 4, 20.0f, 0.5490, 0.3882, 0.1098};
-planet saturn_properties{saturn_model, planet_o, "Saturn", 1.2f, 5, 30.0f, 0.6784, 0.6039, 0.0275};
-planet uranus_properties{uranus_model, planet_o, "Uranus", 0.8f, 6, 40.0f, 0.0f, 0.3333, 0.8};
-planet neptune_properties{neptune_model, planet_o, "Neptune", 0.6f, 7, 50.0f, 0.0471, 0.5490, 0.6588};
-planet sun_properties{sun_model, planet_o, "Sun", 1.5f, 0, 0.0f, 0.9882, 0.5608, 0.2980};
+planet mercury_properties{mercury_model, planet_o, "Mercury",  0.3f, 0, 2.0f, 0.4314, 0.5412, 0.4941, texture_mercury};
+planet venus_properties{venus_model, planet_o, "Venus", 0.4f, 1, 6.0f, 0.5686, 0.3529, 0.0f, texture_venus};
+planet earth_properties{earth_model, planet_o, "Earth", 0.5f, 2, 9.0f, 0.2824, 0.2706, 0.6902, texture_earth};
+planet mars_properties{mars_model, planet_o, "Mars", 0.3f, 3, 14.0f, 0.4588, 0.4549, 0.1255, texture_mars};
+planet jupiter_properties{jupiter_model, planet_o, "Jupiter", 1.6f, 4, 20.0f, 0.5490, 0.3882, 0.1098, texture_jupiter};
+planet saturn_properties{saturn_model, planet_o, "Saturn", 1.2f, 5, 30.0f, 0.6784, 0.6039, 0.0275, texture_saturn};
+planet uranus_properties{uranus_model, planet_o, "Uranus", 0.8f, 6, 40.0f, 0.0f, 0.3333, 0.8, texture_uranus};
+planet neptune_properties{neptune_model, planet_o, "Neptune", 0.6f, 7, 50.0f, 0.0471, 0.5490, 0.6588, texture_neptune};
+planet sun_properties{sun_model, planet_o, "Sun", 1.5f, 0, 0.0f, 0.9882, 0.5608, 0.2980, texture_sun};
 //speed and distance of the Moon is equal to the speed and distance of the Earth
-planet moon_properties{moon_model, planet_o, "Moon", 0.3f, 2, 9.0f, 0.6118, 0.6118, 0.6118};
+planet moon_properties{moon_model, planet_o, "Moon", 0.3f, 2, 9.0f, 0.6118, 0.6118, 0.6118, texture_moon};
 //appropriate container to store the planets with their properties
 planet properties[10] = {mercury_properties, venus_properties, earth_properties, mars_properties, jupiter_properties, saturn_properties, uranus_properties, neptune_properties, sun_properties, moon_properties};
 
@@ -207,6 +220,21 @@ void ApplicationSolar::updateProjection()
   glUseProgram(m_shaders.at("star").handle);
   glUniformMatrix4fv(m_shaders.at("star").u_locs.at("ProjectionMatrix"),
                        1, GL_FALSE, glm::value_ptr(m_view_projection));
+}
+
+void ApplicationSolar::update_textures()
+{
+    texture_mercury = texture_loader::file(m_resource_path + "textures/mercurymap.jpg");
+    std::cout<<"ok";
+    texture_venus = texture_loader::file(m_resource_path + "textures/venusmap.jpg");
+    texture_earth = texture_loader::file(m_resource_path + "textures/earthmap1k.jpg");
+    texture_mars = texture_loader::file(m_resource_path + "textures/mars_1k_color.jpg");
+    texture_jupiter = texture_loader::file(m_resource_path + "textures/jupitermap.jpg");
+    texture_saturn = texture_loader::file(m_resource_path + "textures/saturnmap.jpg");
+    texture_uranus = texture_loader::file(m_resource_path + "textures/uranusmap.jpg");
+    texture_neptune = texture_loader::file(m_resource_path + "textures/neptunemap.jpg");
+    texture_sun = texture_loader::file(m_resource_path + "textures/sunmap.jpg");
+    texture_moon = texture_loader::file(m_resource_path + "textures/moonmap1k.jpg");
 }
 
 // update uniform locations

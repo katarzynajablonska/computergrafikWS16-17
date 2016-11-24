@@ -19,6 +19,7 @@ class ApplicationSolar : public Application {
     void uploadUniforms_s();
   // update projection matrix
   void updateProjection();
+    void update_textures();
   // react to key input
   void keyCallback(int key, int scancode, int action, int mods);
   // draw all objects

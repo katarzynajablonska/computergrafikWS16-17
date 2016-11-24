@@ -5,6 +5,7 @@
 #include <glbinding/gl/gl.h>
 
 #include "model_loader.hpp"
+#include "pixel_data.hpp"
 
 // use gl definitions from glbinding 
 using namespace gl;
@@ -54,6 +55,7 @@ struct planet
     float color_r;
     float color_g;
     float color_b;
+    pixel_data texture;
     
 };
 
