@@ -34,6 +34,8 @@ class ApplicationSolar : public Application {
  protected:
   void initializeShaderPrograms();
   void initializeGeometry();
+  //needed for initializing the textures
+  void initializeTextures();
   void updateView();
 
   // cpu representation of model

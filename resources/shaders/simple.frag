@@ -10,6 +10,8 @@ in vec3 pass_Color;
 in vec3 normalInterp;
 in vec3 vertPos;
 in vec3 LightPos;
+uniform sampler2D Texture;
+in vec2 pass_textureCoord;
 
 vec3 ambient;
 vec3 diffuse;
@@ -21,6 +23,7 @@ void main()
 {
     ambient = pass_Color;
     diffuse = pass_Color;
+    vec4 texColor = texture(Texture, pass_textureCoord);
     vec3 normal = normalize(normalInterp);
     vec3 lightDir = normalize(LightPos - vertPos);
     

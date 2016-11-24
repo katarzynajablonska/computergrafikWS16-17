@@ -88,6 +88,7 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
   // set number of vertice sin buffer
   star_model.vertex_num = star_model.data.size() / component_num;
   initializeGeometry();
+  initializeTextures();
   initializeShaderPrograms();
 }
 
@@ -106,7 +107,17 @@ pixel_data texture_uranus{};
 pixel_data texture_neptune{};
 pixel_data texture_sun{};
 pixel_data texture_moon{};
-//GLuint texture_object = 0;
+GLuint texture_object;
+GLuint texture_object_mercury;
+GLuint texture_object_venus;
+GLuint texture_object_earth;
+GLuint texture_object_mars;
+GLuint texture_object_jupiter;
+GLuint texture_object_saturn;
+GLuint texture_object_uranus;
+GLuint texture_object_neptune;
+GLuint texture_object_sun;
+GLuint texture_object_moon;
 
 //please find declaration of struct "planet" in framework/include/structs.hpp
 planet mercury_properties{mercury_model, planet_o, "Mercury",  0.3f, 0, 2.0f, 0.4314, 0.5412, 0.4941, texture_mercury};
@@ -169,8 +180,40 @@ void ApplicationSolar::render() const
     //bind shader to upload uniforms
     glUseProgram(m_shaders.at("planet").handle);
     
+    // rendering the skybox
+    glm::mat4 universe_matrix = glm::translate(glm::mat4{}, glm::vec3{0.0f, 0.0f, 0.0f});
+    universe_matrix = glm::scale(universe_matrix, glm::vec3{200.0f, 200.0f, 200.0f});
+    glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ModelMatrix"), 1, GL_FALSE,
+                       glm::value_ptr(universe_matrix));
+    
+    // extra matrix for normal transformation to keep them orthogonal to surface
+    glm::mat4 normal_universe_matrix = glm::inverseTranspose(glm::inverse(m_view_transform) * universe_matrix);
+    glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("NormalMatrix"), 1, GL_FALSE, glm::value_ptr(normal_universe_matrix));
+    
     for (int i = 0; i<10; i++)
     {
+        switch (i)
+        {
+            case 0: texture_object = texture_object_mercury;
+            case 1: texture_object = texture_object_venus;
+            case 2: texture_object = texture_object_earth;
+            case 3: texture_object = texture_object_mars;
+            case 4: texture_object = texture_object_jupiter;
+            case 5: texture_object = texture_object_saturn;
+            case 6: texture_object = texture_object_uranus;
+            case 7: texture_object = texture_object_neptune;
+            case 8: texture_object = texture_object_sun;
+            case 9: texture_object = texture_object_moon;
+        }
+        
+        //rendering the texture of the planet
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture_object);
+        glUniform1i(m_shaders.at("planet").u_locs.at("Texture"), 0);
+        
+        // bind the VAO to draw
+        glBindVertexArray(properties[i].planet_object.vertex_AO);
+        
         upload_planet_transforms(properties[i]);
         glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ModelMatrix"),
                        1, GL_FALSE, glm::value_ptr(model_matrix));
@@ -179,8 +222,6 @@ void ApplicationSolar::render() const
         //assigning the color to the planets
         glUniform3fv(m_shaders.at("planet").u_locs.at("Color"),
                      1, glm::value_ptr(glm::fvec3{properties[i].color_r, properties[i].color_g, properties[i].color_b}));
-        // bind the VAO to draw
-        glBindVertexArray(properties[i].planet_object.vertex_AO);
     
         // draw bound vertex array using bound shader
         glDrawElements(properties[i].planet_object.draw_mode, properties[i].planet_object.num_elements, model::INDEX.type, NULL);
@@ -362,7 +403,7 @@ void ApplicationSolar::initializeGeometry()
 {
     for (int i=0; i<10; i++)
     {
-        properties[i].planet_model = model_loader::obj(m_resource_path + "models/sphere.obj", model::NORMAL);
+        properties[i].planet_model = model_loader::obj(m_resource_path + "models/sphere.obj", model::NORMAL | model::TEXCOORD);
         
         // generate vertex array object
         glGenVertexArrays(1, &properties[i].planet_object.vertex_AO);
@@ -384,6 +425,10 @@ void ApplicationSolar::initializeGeometry()
         glEnableVertexAttribArray(1);
         // second attribute is 3 floats with no offset & stride
         glVertexAttribPointer(1, model::NORMAL.components, model::NORMAL.type, GL_FALSE, properties[i].planet_model.vertex_bytes, properties[i].planet_model.offsets[model::NORMAL]);
+        // activate third attribute on gpu
+        glEnableVertexAttribArray(2);
+        // third attribute is 3 floats with no offset & stride
+        glVertexAttribPointer(2, model::TEXCOORD.components, model::TEXCOORD.type, GL_FALSE, properties[i].planet_model.vertex_bytes, properties[i].planet_model.offsets[model::TEXCOORD]);
         
         // generate generic buffer
         glGenBuffers(1, &properties[i].planet_object.element_BO);
@@ -418,6 +463,80 @@ void ApplicationSolar::initializeGeometry()
     glEnableVertexAttribArray(1);
     // second attribute is 3 floats with no offset & stride
     glVertexAttribPointer(1, model::NORMAL.components, model::NORMAL.type, GL_FALSE, star_model.vertex_bytes, star_model.offsets[model::NORMAL]);
+}
+
+void ApplicationSolar::initializeTextures()
+{
+    //this probably could have been done in a some kinda loop, but since names are not indexed and so are the texture_objects, we'll need to do copy-paste these 5 following lines and chane textures and texture_objects
+    glActiveTexture(GL_TEXTURE0);
+    glGenTextures(1, &texture_object_mercury);
+    glBindTexture(GL_TEXTURE_2D, texture_object_mercury);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GLint(GL_LINEAR));
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GLint(GL_LINEAR));
+    glTexImage2D(GL_TEXTURE_2D , 0 , texture_mercury.channels , texture_mercury.width , texture_mercury.height , 0 , texture_mercury.channels , texture_mercury.channel_type , texture_mercury.ptr());
+    
+    glActiveTexture(GL_TEXTURE0);
+    glGenTextures(1, &texture_object_venus);
+    glBindTexture(GL_TEXTURE_2D, texture_object_venus);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GLint(GL_LINEAR));
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GLint(GL_LINEAR));
+    glTexImage2D(GL_TEXTURE_2D , 0 , texture_venus.channels , texture_venus.width , texture_venus.height , 0 , texture_venus.channels , texture_venus.channel_type , texture_venus.ptr());
+    
+    glActiveTexture(GL_TEXTURE0);
+    glGenTextures(1, &texture_object_earth);
+    glBindTexture(GL_TEXTURE_2D, texture_object_earth);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GLint(GL_LINEAR));
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GLint(GL_LINEAR));
+    glTexImage2D(GL_TEXTURE_2D , 0 , texture_earth.channels , texture_earth.width , texture_earth.height , 0 , texture_earth.channels , texture_earth.channel_type , texture_earth.ptr());
+    
+    glActiveTexture(GL_TEXTURE0);
+    glGenTextures(1, &texture_object_mars);
+    glBindTexture(GL_TEXTURE_2D, texture_object_mars);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GLint(GL_LINEAR));
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GLint(GL_LINEAR));
+    glTexImage2D(GL_TEXTURE_2D , 0 , texture_mars.channels , texture_mars.width , texture_mars.height , 0 , texture_mars.channels , texture_mars.channel_type , texture_mars.ptr());
+    
+    glActiveTexture(GL_TEXTURE0);
+    glGenTextures(1, &texture_object_jupiter);
+    glBindTexture(GL_TEXTURE_2D, texture_object_jupiter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GLint(GL_LINEAR));
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GLint(GL_LINEAR));
+    glTexImage2D(GL_TEXTURE_2D , 0 , texture_jupiter.channels , texture_jupiter.width , texture_jupiter.height , 0 , texture_jupiter.channels , texture_jupiter.channel_type , texture_jupiter.ptr());
+    
+    glActiveTexture(GL_TEXTURE0);
+    glGenTextures(1, &texture_object_saturn);
+    glBindTexture(GL_TEXTURE_2D, texture_object_saturn);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GLint(GL_LINEAR));
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GLint(GL_LINEAR));
+    glTexImage2D(GL_TEXTURE_2D , 0 , texture_saturn.channels , texture_saturn.width , texture_saturn.height , 0 , texture_saturn.channels , texture_saturn.channel_type , texture_saturn.ptr());
+    
+    glActiveTexture(GL_TEXTURE0);
+    glGenTextures(1, &texture_object_uranus);
+    glBindTexture(GL_TEXTURE_2D, texture_object_uranus);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GLint(GL_LINEAR));
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GLint(GL_LINEAR));
+    glTexImage2D(GL_TEXTURE_2D , 0 , texture_uranus.channels , texture_uranus.width , texture_uranus.height , 0 , texture_uranus.channels , texture_uranus.channel_type , texture_uranus.ptr());
+    
+    glActiveTexture(GL_TEXTURE0);
+    glGenTextures(1, &texture_object_neptune);
+    glBindTexture(GL_TEXTURE_2D, texture_object_neptune);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GLint(GL_LINEAR));
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GLint(GL_LINEAR));
+    glTexImage2D(GL_TEXTURE_2D , 0 , texture_neptune.channels , texture_neptune.width , texture_neptune.height , 0 , texture_neptune.channels , texture_neptune.channel_type , texture_neptune.ptr());
+    
+    glActiveTexture(GL_TEXTURE0);
+    glGenTextures(1, &texture_object_sun);
+    glBindTexture(GL_TEXTURE_2D, texture_object_sun);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GLint(GL_LINEAR));
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GLint(GL_LINEAR));
+    glTexImage2D(GL_TEXTURE_2D , 0 , texture_sun.channels , texture_sun.width , texture_sun.height , 0 , texture_sun.channels , texture_sun.channel_type , texture_sun.ptr());
+    
+    glActiveTexture(GL_TEXTURE0);
+    glGenTextures(1, &texture_object_moon);
+    glBindTexture(GL_TEXTURE_2D, texture_object_moon);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GLint(GL_LINEAR));
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GLint(GL_LINEAR));
+    glTexImage2D(GL_TEXTURE_2D , 0 , texture_moon.channels , texture_moon.width , texture_moon.height , 0 , texture_moon.channels , texture_moon.channel_type , texture_moon.ptr());
 }
 
 ApplicationSolar::~ApplicationSolar()
