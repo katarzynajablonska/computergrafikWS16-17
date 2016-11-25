@@ -189,7 +189,7 @@ void Launcher::update_shader_programs(bool throwing) {
   // after shader programs are recompiled, uniform locations may change
   m_application->uploadUniforms();
     //loading textures
-  //m_application ->update_textures();
+  m_application ->update_textures();
   
   // upload projection matrix to new shaders
   int width, height;

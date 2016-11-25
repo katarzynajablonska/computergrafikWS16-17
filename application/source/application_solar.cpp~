@@ -1,4 +1,3 @@
-#include <algorithm>
 #include "application_solar.hpp"
 #include "launcher.hpp"
 
@@ -89,7 +88,6 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
   // set number of vertice sin buffer
   star_model.vertex_num = star_model.data.size() / component_num;
   initializeGeometry();
-  update_textures();
   initializeTextures();
   initializeShaderPrograms();
 }
@@ -196,16 +194,16 @@ void ApplicationSolar::render() const
     {
         switch (i)
         {
-	    case 0: texture_object = texture_object_mercury; break;
-	    case 1: texture_object = texture_object_venus; break;
-	    case 2: texture_object = texture_object_earth; break;
-	    case 3: texture_object = texture_object_mars; break;
-	    case 4: texture_object = texture_object_jupiter; break;
-	    case 5: texture_object = texture_object_saturn; break;
-	    case 6: texture_object = texture_object_uranus; break;
-	    case 7: texture_object = texture_object_neptune; break;
-	    case 8: texture_object = texture_object_sun; break;
-	    case 9: texture_object = texture_object_moon; break;
+            case 0: texture_object = texture_object_mercury;
+            case 1: texture_object = texture_object_venus;
+            case 2: texture_object = texture_object_earth;
+            case 3: texture_object = texture_object_mars;
+            case 4: texture_object = texture_object_jupiter;
+            case 5: texture_object = texture_object_saturn;
+            case 6: texture_object = texture_object_uranus;
+            case 7: texture_object = texture_object_neptune;
+            case 8: texture_object = texture_object_sun;
+            case 9: texture_object = texture_object_moon;
         }
         
         //rendering the texture of the planet
@@ -405,7 +403,7 @@ void ApplicationSolar::initializeGeometry()
 {
     for (int i=0; i<10; i++)
     {
-      properties[i].planet_model = model_loader::obj(m_resource_path + "models/sphere.obj", model::NORMAL | model::TEXCOORD);
+        properties[i].planet_model = model_loader::obj(m_resource_path + "models/sphere.obj", model::NORMAL | model::TEXCOORD);
         
         // generate vertex array object
         glGenVertexArrays(1, &properties[i].planet_object.vertex_AO);
