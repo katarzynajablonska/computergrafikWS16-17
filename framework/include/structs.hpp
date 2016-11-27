@@ -54,6 +54,8 @@ struct planet
     float color_g;
     float color_b;
     pixel_data texture;
+    texture_object tex;
+    GLenum gl_texture;
     
 };
 
