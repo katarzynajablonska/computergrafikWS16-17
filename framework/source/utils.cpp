@@ -12,12 +12,34 @@ using namespace gl;
 
 namespace utils {
 
-texture_object create_texture_object(pixel_data const& tex) {
-  texture_object t_obj{};
-
-  throw std::logic_error("Texture Object creation not implemented yet");
-
-  return t_obj;
+//now mplemented and works fine
+texture_object create_texture_object(pixel_data const& tex)
+{
+    texture_object t_obj{};
+    glGenTextures(1, &t_obj.handle);
+    glBindTexture(GL_TEXTURE_2D, t_obj.handle);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    GLenum internal_format = GL_NONE;
+    //determining internal texture formats for each format of image
+    if (tex.channels == GL_RED)
+    {
+        internal_format = GL_R8;
+    }
+    else if (tex.channels == GL_RG)
+    {
+        internal_format = GL_RG8;
+    }
+    else if (tex.channels == GL_RGB)
+    {
+        internal_format = GL_RGB8;
+    }
+    else if (tex.channels == GL_RGBA)
+    {
+        internal_format = GL_RGBA8;
+    }
+    glTexImage2D(GL_TEXTURE_2D, 0, GLint(internal_format), tex.width, tex.height, 0, tex.channels, tex.channel_type, tex.ptr());
+    return t_obj;
 }
 
 void print_bound_textures() {

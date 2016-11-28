@@ -19,7 +19,6 @@ class ApplicationSolar : public Application {
     void uploadUniforms_s();
   // update projection matrix
   void updateProjection();
-    void update_textures();
   // react to key input
   void keyCallback(int key, int scancode, int action, int mods);
   // draw all objects
@@ -30,12 +29,13 @@ class ApplicationSolar : public Application {
   void upload_planet_transforms(planet const& model) const;
     
   float generate_random_numbers(float a, float b);
+    
+  //custom function for loading the textures
+  void update_textures();
 
  protected:
   void initializeShaderPrograms();
   void initializeGeometry();
-  //needed for initializing the textures
-  void initializeTextures();
   void updateView();
 
   // cpu representation of model

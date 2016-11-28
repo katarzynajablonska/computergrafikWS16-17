@@ -28,8 +28,6 @@ class Application {
   virtual std::map<std::string, shader_program>& getShaderPrograms();
   // draw all objects
   virtual void render() const = 0;
-    
-  inline virtual void update_textures() {};
 
  protected:
   void updateUniformLocations();

@@ -1,4 +1,3 @@
-#include <algorithm>
 #include "application_solar.hpp"
 #include "launcher.hpp"
 
@@ -42,7 +41,31 @@ model neptune_model{};
 model sun_model{};
 model moon_model{};
 model star_model{};
+model universe_model{};
 //model star_model{stars, model::POSITION|model::NORMAL}; - this was throwing segmentation fault, so we had to create an empty model and "fill" it with values below in the constructor
+
+pixel_data texture_mercury{};
+pixel_data texture_venus{};
+pixel_data texture_earth{};
+pixel_data texture_mars{};
+pixel_data texture_jupiter{};
+pixel_data texture_saturn{};
+pixel_data texture_uranus{};
+pixel_data texture_neptune{};
+pixel_data texture_sun{};
+pixel_data texture_moon{};
+pixel_data texture_universe{};
+texture_object texture_object_mercury{};
+texture_object texture_object_venus{};
+texture_object texture_object_earth{};
+texture_object texture_object_mars{};
+texture_object texture_object_jupiter{};
+texture_object texture_object_saturn{};
+texture_object texture_object_uranus{};
+texture_object texture_object_neptune{};
+texture_object texture_object_sun{};
+texture_object texture_object_moon{};
+texture_object texture_object_universe{};
 
 //function forcalculating a random float within the interval (a,b)
 float ApplicationSolar::generate_random_numbers(float a, float b)
@@ -90,7 +113,6 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
   star_model.vertex_num = star_model.data.size() / component_num;
   update_textures();
   initializeGeometry();
-  initializeTextures();
   initializeShaderPrograms();
 }
 
@@ -99,42 +121,22 @@ model_object planet_o{};
 //needed new model_object for stars
 model_object star{};
 
-pixel_data texture_mercury{};
-pixel_data texture_venus{};
-pixel_data texture_earth{};
-pixel_data texture_mars{};
-pixel_data texture_jupiter{};
-pixel_data texture_saturn{};
-pixel_data texture_uranus{};
-pixel_data texture_neptune{};
-pixel_data texture_sun{};
-pixel_data texture_moon{};
-texture_object texture_object_mercury{};
-texture_object texture_object_venus{};
-texture_object texture_object_earth{};
-texture_object texture_object_mars{};
-texture_object texture_object_jupiter{};
-texture_object texture_object_saturn{};
-texture_object texture_object_uranus{};
-texture_object texture_object_neptune{};
-texture_object texture_object_sun{};
-texture_object texture_object_moon{};
-/*GLuint texture_object;*/
-
 //please find declaration of struct "planet" in framework/include/structs.hpp
-planet mercury_properties{mercury_model, planet_o, "Mercury",  0.3f, 0, 2.0f, 0.4314, 0.5412, 0.4941, texture_mercury, texture_object_mercury, GL_TEXTURE0};
-planet venus_properties{venus_model, planet_o, "Venus", 0.4f, 1, 6.0f, 0.5686, 0.3529, 0.0f, texture_venus, texture_object_venus, GL_TEXTURE1};
-planet earth_properties{earth_model, planet_o, "Earth", 0.5f, 2, 9.0f, 0.2824, 0.2706, 0.6902, texture_earth, texture_object_earth, GL_TEXTURE2};
-planet mars_properties{mars_model, planet_o, "Mars", 0.3f, 3, 14.0f, 0.4588, 0.4549, 0.1255, texture_mars, texture_object_mars, GL_TEXTURE3};
-planet jupiter_properties{jupiter_model, planet_o, "Jupiter", 1.6f, 4, 20.0f, 0.5490, 0.3882, 0.1098, texture_jupiter, texture_object_jupiter, GL_TEXTURE4};
-planet saturn_properties{saturn_model, planet_o, "Saturn", 1.2f, 5, 30.0f, 0.6784, 0.6039, 0.0275, texture_saturn, texture_object_saturn, GL_TEXTURE5};
-planet uranus_properties{uranus_model, planet_o, "Uranus", 0.8f, 6, 40.0f, 0.0f, 0.3333, 0.8, texture_uranus, texture_object_uranus, GL_TEXTURE6};
-planet neptune_properties{neptune_model, planet_o, "Neptune", 0.6f, 7, 50.0f, 0.0471, 0.5490, 0.6588, texture_neptune, texture_object_neptune, GL_TEXTURE7};
-planet sun_properties{sun_model, planet_o, "Sun", 1.5f, 0, 0.0f, 0.9882, 0.5608, 0.2980, texture_sun, texture_object_sun, GL_TEXTURE8};
+planet mercury_properties{mercury_model, planet_o, "Mercury",  0.3f, 0, 2.0f, 0.4314, 0.5412, 0.4941, texture_object_mercury};
+planet venus_properties{venus_model, planet_o, "Venus", 0.4f, 1, 6.0f, 0.5686, 0.3529, 0.0f, texture_object_venus};
+planet earth_properties{earth_model, planet_o, "Earth", 0.5f, 2, 9.0f, 0.2824, 0.2706, 0.6902, texture_object_earth};
+planet mars_properties{mars_model, planet_o, "Mars", 0.3f, 3, 14.0f, 0.4588, 0.4549, 0.1255, texture_object_mars};
+planet jupiter_properties{jupiter_model, planet_o, "Jupiter", 1.6f, 4, 20.0f, 0.5490, 0.3882, 0.1098, texture_object_jupiter};
+planet saturn_properties{saturn_model, planet_o, "Saturn", 1.2f, 5, 30.0f, 0.6784, 0.6039, 0.0275, texture_object_saturn};
+planet uranus_properties{uranus_model, planet_o, "Uranus", 0.8f, 6, 40.0f, 0.0f, 0.3333, 0.8, texture_object_uranus};
+planet neptune_properties{neptune_model, planet_o, "Neptune", 0.6f, 7, 50.0f, 0.0471, 0.5490, 0.6588, texture_object_neptune};
+planet sun_properties{sun_model, planet_o, "Sun", 1.5f, 0, 0.0f, 0.9882, 0.5608, 0.2980, texture_object_sun};
 //speed and distance of the Moon is equal to the speed and distance of the Earth
-planet moon_properties{moon_model, planet_o, "Moon", 0.3f, 2, 9.0f, 0.6118, 0.6118, 0.6118, texture_moon, texture_object_moon, GL_TEXTURE9};
+planet moon_properties{moon_model, planet_o, "Moon", 0.3f, 2, 9.0f, 0.6118, 0.6118, 0.6118, texture_object_moon};
+//the "Universe"(skydome) needs to "wrap" the most distant planet (Neptune - 50.0f) too, so that's why its size is set to 70.0f
+planet universe_properties{universe_model, planet_o, "Universe", 70.0f, 0, 0.0f, 0.0f, 0.0f, 0.0f, texture_object_universe};
 //appropriate container to store the planets with their properties
-planet properties[10] = {mercury_properties, venus_properties, earth_properties, mars_properties, jupiter_properties, saturn_properties, uranus_properties, neptune_properties, sun_properties, moon_properties};
+planet properties[11] = {mercury_properties, venus_properties, earth_properties, mars_properties, jupiter_properties, saturn_properties, uranus_properties, neptune_properties, sun_properties, moon_properties, universe_properties};
 
 
 void ApplicationSolar::upload_planet_transforms(planet const& model) const
@@ -143,6 +145,7 @@ void ApplicationSolar::upload_planet_transforms(planet const& model) const
     std::string moon = "Moon";
     std::string sun = "Sun";
     std::string earth = "Earth";
+    std::string universe = "Universe";
     glm::fmat4 model_matrix_earth{};
     
     //we need to consider two "special" cases - Sun and Moon, which we identify by their names (3rd value in the struct)
@@ -159,6 +162,11 @@ void ApplicationSolar::upload_planet_transforms(planet const& model) const
         model_matrix = glm::rotate(model_matrix, float(glfwGetTime()*4.0f), glm::fvec3{0.0f, 1.0f, 1.0f});
         //this translation is optional - it's only to make the Moon visible good enough
         model_matrix = glm::translate(model_matrix, glm::fvec3{3.0f, 0.0f, 0.0f});
+    }
+    else if (planet_name.compare(universe) == 0)
+    {
+        //Universe is a "static" object, it doesn't change its position(that's why translation using (0, 0, 0) vector) and doesn't rotate
+        model_matrix = glm::translate(model_matrix, glm::fvec3{0.0f, 0.0f, 0.0f});
     }
     else
     {
@@ -182,24 +190,13 @@ void ApplicationSolar::render() const
     //bind shader to upload uniforms
     glUseProgram(m_shaders.at("planet").handle);
     
-    // rendering the skybox
-    glm::mat4 universe_matrix = glm::translate(glm::mat4{}, glm::vec3{0.0f, 0.0f, 0.0f});
-    universe_matrix = glm::scale(universe_matrix, glm::vec3{200.0f, 200.0f, 200.0f});
-    glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ModelMatrix"), 1, GL_FALSE,
-                       glm::value_ptr(universe_matrix));
-    
-    // extra matrix for normal transformation to keep them orthogonal to surface
-    glm::mat4 normal_universe_matrix = glm::inverseTranspose(glm::inverse(m_view_transform) * universe_matrix);
-    glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("NormalMatrix"), 1, GL_FALSE, glm::value_ptr(normal_universe_matrix));
-    
-    for (int i = 0; i<10; i++)
+    for (int i = 0; i<11; i++)
     {
-        //rendering the texture of the planet
-        glActiveTexture(properties[i].gl_texture);
-        glBindTexture(GL_TEXTURE_2D, properties[i].tex.handle);
-        
+        //In the previous version we had different GL_TEXTURE for each planet. But since glTexImage2D doesn't care if the current active texture is 0, 1, 10 or whatever, we decided to stick to one GL_TEXTURE0
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, properties[i].texture.handle);
+        glUniform1i(m_shaders.at("planet").u_locs.at("ColorTex"), 0);
         upload_planet_transforms(properties[i]);
-        glUniform1i(m_shaders.at("planet").u_locs.at("Texture"), 0);
         glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ModelMatrix"),
                        1, GL_FALSE, glm::value_ptr(model_matrix));
         glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("NormalMatrix"),
@@ -209,7 +206,7 @@ void ApplicationSolar::render() const
                      1, glm::value_ptr(glm::fvec3{properties[i].color_r, properties[i].color_g, properties[i].color_b}));
         // bind the VAO to draw
         glBindVertexArray(properties[i].planet_object.vertex_AO);
-        
+    
         // draw bound vertex array using bound shader
         glDrawElements(properties[i].planet_object.draw_mode, properties[i].planet_object.num_elements, model::INDEX.type, NULL);
         //after drawing the element, the matrices must again be empty, otherwise we would generate further planets based on the previous calculations of these matrices.
@@ -248,20 +245,6 @@ void ApplicationSolar::updateProjection()
   glUseProgram(m_shaders.at("star").handle);
   glUniformMatrix4fv(m_shaders.at("star").u_locs.at("ProjectionMatrix"),
                        1, GL_FALSE, glm::value_ptr(m_view_projection));
-}
-
-void ApplicationSolar::update_textures()
-{
-    properties[0].texture = texture_loader::file(m_resource_path + "textures/mercurymap.jpg");
-    properties[1].texture = texture_loader::file(m_resource_path + "textures/venusmap.jpg");
-    properties[2].texture = texture_loader::file(m_resource_path + "textures/earthmap1k.jpg");
-    properties[3].texture = texture_loader::file(m_resource_path + "textures/mars_1k_color.jpg");
-    properties[4].texture = texture_loader::file(m_resource_path + "textures/jupitermap.jpg");
-    properties[5].texture = texture_loader::file(m_resource_path + "textures/saturnmap.jpg");
-    properties[6].texture = texture_loader::file(m_resource_path + "textures/uranusmap.jpg");
-    properties[7].texture = texture_loader::file(m_resource_path + "textures/neptunemap.jpg");
-    properties[8].texture = texture_loader::file(m_resource_path + "textures/sunmap.jpg");
-    properties[9].texture = texture_loader::file(m_resource_path + "textures/moonmap1k.jpg");
 }
 
 // update uniform locations
@@ -365,6 +348,33 @@ void ApplicationSolar::mouseScrollCallback(double x, double y)
     updateView();
 }
 
+void ApplicationSolar::update_textures()
+{
+    texture_mercury = texture_loader::file(m_resource_path + "textures/mercurymap.png");
+    texture_venus = texture_loader::file(m_resource_path + "textures/venusmap.png");
+    texture_earth = texture_loader::file(m_resource_path + "textures/earthmap1k.png");
+    texture_mars = texture_loader::file(m_resource_path + "textures/mars_1k_color.png");
+    texture_jupiter = texture_loader::file(m_resource_path + "textures/jupitermap.png");
+    texture_saturn = texture_loader::file(m_resource_path + "textures/saturnmap.png");
+    texture_uranus = texture_loader::file(m_resource_path + "textures/uranusmap.png");
+    texture_neptune = texture_loader::file(m_resource_path + "textures/neptunemap.png");
+    texture_sun = texture_loader::file(m_resource_path + "textures/sunmap.png");
+    texture_moon = texture_loader::file(m_resource_path + "textures/moonmap1k.png");
+    texture_universe = texture_loader::file(m_resource_path + "textures/universe.png");
+    
+    properties[0].texture = utils::create_texture_object(texture_mercury);
+    properties[1].texture = utils::create_texture_object(texture_venus);
+    properties[2].texture = utils::create_texture_object(texture_earth);
+    properties[3].texture = utils::create_texture_object(texture_mars);
+    properties[4].texture = utils::create_texture_object(texture_jupiter);
+    properties[5].texture = utils::create_texture_object(texture_saturn);
+    properties[6].texture = utils::create_texture_object(texture_uranus);
+    properties[7].texture = utils::create_texture_object(texture_neptune);
+    properties[8].texture = utils::create_texture_object(texture_sun);
+    properties[9].texture = utils::create_texture_object(texture_moon);
+    properties[10].texture = utils::create_texture_object(texture_universe);
+}
+
 // load shader programs
 void ApplicationSolar::initializeShaderPrograms()
 {
@@ -380,7 +390,7 @@ void ApplicationSolar::initializeShaderPrograms()
   m_shaders.at("planet").u_locs["ProjectionMatrix"] = -1;
   m_shaders.at("planet").u_locs["Color"] = -1;
   m_shaders.at("planet").u_locs["Light"] = -1;
-  m_shaders.at("planet").u_locs["Texture"] = -1;
+  m_shaders.at("planet").u_locs["ColorTex"] = -1;
   m_shaders.at("star").u_locs["ViewMatrix"] = -1;
   m_shaders.at("star").u_locs["ProjectionMatrix"] = -1;
 }
@@ -388,9 +398,9 @@ void ApplicationSolar::initializeShaderPrograms()
 // load models
 void ApplicationSolar::initializeGeometry()
 {
-    for (int i=0; i<10; i++)
+    for (int i=0; i<11; i++)
     {
-      properties[i].planet_model = model_loader::obj(m_resource_path + "models/sphere.obj", model::NORMAL | model::TEXCOORD);
+        properties[i].planet_model = model_loader::obj(m_resource_path + "models/sphere.obj", model::NORMAL | model::TEXCOORD);
         
         // generate vertex array object
         glGenVertexArrays(1, &properties[i].planet_object.vertex_AO);
@@ -415,7 +425,7 @@ void ApplicationSolar::initializeGeometry()
         // activate third attribute on gpu
         glEnableVertexAttribArray(2);
         // third attribute is 3 floats with no offset & stride
-        glVertexAttribPointer(2, model::TEXCOORD.components, model::TEXCOORD.type, GL_FALSE, properties[i].planet_model.vertex_bytes, properties[i].planet_model.offsets[model::TEXCOORD]);
+        glVertexAttribPointer(2, model::TEXCOORD.components, model::TEXCOORD.type, GL_FALSE, properties[i].planet_model.vertex_bytes, properties[i].planet_model.offsets[model::TEXCOORD]);        
         
         // generate generic buffer
         glGenBuffers(1, &properties[i].planet_object.element_BO);
@@ -452,22 +462,9 @@ void ApplicationSolar::initializeGeometry()
     glVertexAttribPointer(1, model::NORMAL.components, model::NORMAL.type, GL_FALSE, star_model.vertex_bytes, star_model.offsets[model::NORMAL]);
 }
 
-void ApplicationSolar::initializeTextures()
-{
-    for (int i=0; i<10; i++)
-    {
-        glActiveTexture(properties[i].gl_texture);
-        glGenTextures(1, &properties[i].tex.handle);
-        glBindTexture(GL_TEXTURE_2D, properties[i].tex.handle);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GLint(GL_LINEAR));
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GLint(GL_LINEAR));
-        glTexImage2D(GL_TEXTURE_2D , 0 , properties[i].texture.channels , properties[i].texture.width , properties[i].texture.height , 0 , properties[i].texture.channels , properties[i].texture.channel_type , properties[i].texture.ptr());
-    }
-}
-
 ApplicationSolar::~ApplicationSolar()
 {
-    for (int i=0; i<10; i++)
+    for (int i=0; i<11; i++)
     {
         glDeleteBuffers(1, &properties[i].planet_object.vertex_BO);
         glDeleteBuffers(1, &properties[i].planet_object.element_BO);

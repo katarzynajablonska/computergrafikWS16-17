@@ -2,6 +2,7 @@
 
 precision mediump float;
 
+uniform  sampler2D ColorTex;
 in vec3 pass_Normal;
 out vec4 out_Color;
 //the actual color of the planet that should be passed through shader
@@ -10,8 +11,7 @@ in vec3 pass_Color;
 in vec3 normalInterp;
 in vec3 vertPos;
 in vec3 LightPos;
-uniform sampler2D Texture;
-in vec2 pass_textureCoord;
+in vec2 pass_TexCoord;
 
 vec3 ambient;
 vec3 diffuse;
@@ -21,9 +21,9 @@ const float screenGamma = 2.2;
 
 void main()
 {
-    ambient = pass_Color;
-    diffuse = pass_Color;
-    vec4 texColor = texture(Texture, pass_textureCoord);
+    vec4 TexColor = texture(ColorTex, pass_TexCoord);
+    ambient = TexColor.rgb;
+    diffuse = TexColor.rgb;
     vec3 normal = normalize(normalInterp);
     vec3 lightDir = normalize(LightPos - vertPos);
     

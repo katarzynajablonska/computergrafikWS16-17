@@ -5,7 +5,6 @@
 #include <glbinding/gl/gl.h>
 
 #include "model_loader.hpp"
-#include "pixel_data.hpp"
 
 // use gl definitions from glbinding 
 using namespace gl;
@@ -24,6 +23,7 @@ struct model_object {
   GLsizei num_elements = 0;
 };
 
+//DODANE
 struct star_object
 {
     // vertex array object
@@ -31,6 +31,7 @@ struct star_object
     // vertex buffer object
     GLuint vertex_BO = 0;
 };
+//DODANE
 
 // gpu representation of texture
 struct texture_object {
@@ -53,9 +54,7 @@ struct planet
     float color_r;
     float color_g;
     float color_b;
-    pixel_data texture;
-    texture_object tex;
-    GLenum gl_texture;
+    texture_object texture;
     
 };
 
