@@ -84,13 +84,13 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
  ,planet_object{}
 {
   int new_stars_size = number_of_stars * 3;
-    //here the container is being resized and filled with random X,Y,Z-position values of our stars
+  //here the container is being resized and filled with random X,Y,Z-position values of our stars
   stars.resize(new_stars_size);
-    std::generate(stars.begin(), stars.end(),
-    [&]
-    {
-        return generate_random_numbers(-100.0f, 100.0f);
-    });
+  std::generate(stars.begin(), stars.end(),
+  [&]
+   {
+       return generate_random_numbers(-100.0f, 100.0f);
+   });
     //and now, here we try to do what we wanted to before: create sth like model star_model{stars, model::POSITION|model::NORMAL}. For this we had to basically copy and modify a little bit the constructor from model.cpp file
   star_model.data = stars;
   model::attrib_flag_t contained_attributes = model::POSITION|model::NORMAL;
@@ -287,6 +287,11 @@ void ApplicationSolar::uploadUniforms_s()
 // LEFT/RIGHT - rotate vertical
 void ApplicationSolar::keyCallback(int key, int scancode, int action, int mods)
 {
+    static bool is_greyscale = false;
+    static bool is_mirror_h = false;
+    static bool is_mirror_v = false;
+    static bool is_gausblur = false;
+    
     //chosen key w and it is pressed
   if (key == GLFW_KEY_W && action == GLFW_PRESS)
   {
@@ -332,6 +337,62 @@ void ApplicationSolar::keyCallback(int key, int scancode, int action, int mods)
   else if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS)
   {
       m_view_transform = glm::rotate(m_view_transform, -0.1f, glm::fvec3{0.0f, 0.1f, 0.0f});
+  }
+  else if (key == GLFW_KEY_7 && action == GLFW_PRESS)
+  {
+      glUseProgram(m_shaders.at("planet").handle);
+      if (!is_greyscale)
+      {
+          glUniform1i(glGetUniformLocation(m_shaders.at("planet").handle, "greyscale"), 1);
+          is_greyscale = true;
+      }
+      else
+      {
+          glUniform1i(glGetUniformLocation(m_shaders.at("planet").handle, "greyscale"), 0);
+          is_greyscale = false;
+      }
+  }
+  else if (key == GLFW_KEY_8 && action == GLFW_PRESS)
+  {
+      glUseProgram(m_shaders.at("planet").handle);
+      if (!is_mirror_h)
+      {
+          glUniform1i(glGetUniformLocation(m_shaders.at("planet").handle, "mirror_horiz"), 1);
+          is_mirror_h = true;
+      }
+      else
+      {
+          glUniform1i(glGetUniformLocation(m_shaders.at("planet").handle, "mirror_horiz"), 0);
+          is_mirror_h = false;
+      }
+  }
+  else if (key == GLFW_KEY_9 && action == GLFW_PRESS)
+  {
+      glUseProgram(m_shaders.at("planet").handle);
+      if (!is_mirror_v)
+      {
+          glUniform1i(glGetUniformLocation(m_shaders.at("planet").handle, "mirror_vert"), 1);
+          is_mirror_v = true;
+      }
+      else
+      {
+          glUniform1i(glGetUniformLocation(m_shaders.at("planet").handle, "mirror_vert"), 0);
+          is_mirror_v = false;
+      }
+  }
+  else if (key == GLFW_KEY_0 && action == GLFW_PRESS)
+  {
+      glUseProgram(m_shaders.at("planet").handle);
+      if(!is_gausblur)
+      {
+          glUniform1i(glGetUniformLocation(m_shaders.at("planet").handle, "gaus_blur"), 1);
+          is_gausblur = true;
+      }
+      else
+      {
+          glUniform1i(glGetUniformLocation(m_shaders.at("planet").handle, "gaus_blur"), 0);
+          is_gausblur = false;
+      }
   }
   else
   {
