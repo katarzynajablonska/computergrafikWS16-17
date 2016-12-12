@@ -53,6 +53,7 @@ struct planet
     float color_g;
     float color_b;
     texture_object texture;
+    
 };
 
 struct screenquad_object
