@@ -89,18 +89,12 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
  ,planet_object{}
 {
   int new_stars_size = number_of_stars * 3;
+  //here the container is being resized and filled with random X,Y,Z-position values of our stars
   stars.resize(new_stars_size);
     for (int i = 0 ; i<new_stars_size; i++)
     {
         stars[i] =  generate_random_numbers(-100.0f, 100.0f);
     }
-    #if 0
-    std::generate(stars.begin(), stars.end(),
-    [&]
-    {
-        return generate_random_numbers(-100.0f, 100.0f);
-    });
-    #endif
     //and now, here we try to do what we wanted to before: create sth like model star_model{stars, model::POSITION|model::NORMAL}. For this we had to basically copy and modify a little bit the constructor from model.cpp file
   star_model.data = stars;
   model::attrib_flag_t contained_attributes = model::POSITION|model::NORMAL;
