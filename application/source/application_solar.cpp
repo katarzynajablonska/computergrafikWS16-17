@@ -67,6 +67,10 @@ texture_object texture_object_neptune{};
 texture_object texture_object_sun{};
 texture_object texture_object_moon{};
 texture_object texture_object_universe{};
+framebuffer_object ScreenquadTexture;
+screenquad_object ScreenquadObject;
+GLuint rb_handle;
+GLuint fbo_handle;
 
 //function forcalculating a random float within the interval (a,b)
 float ApplicationSolar::generate_random_numbers(float a, float b)
@@ -84,13 +88,13 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
  ,planet_object{}
 {
   int new_stars_size = number_of_stars * 3;
-  //here the container is being resized and filled with random X,Y,Z-position values of our stars
+    //here the container is being resized and filled with random X,Y,Z-position values of our stars
   stars.resize(new_stars_size);
-  std::generate(stars.begin(), stars.end(),
-  [&]
-   {
-       return generate_random_numbers(-100.0f, 100.0f);
-   });
+    std::generate(stars.begin(), stars.end(),
+    [&]
+    {
+        return generate_random_numbers(-100.0f, 100.0f);
+    });
     //and now, here we try to do what we wanted to before: create sth like model star_model{stars, model::POSITION|model::NORMAL}. For this we had to basically copy and modify a little bit the constructor from model.cpp file
   star_model.data = stars;
   model::attrib_flag_t contained_attributes = model::POSITION|model::NORMAL;
@@ -115,6 +119,7 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
   update_textures();
   initializeGeometry();
   initializeShaderPrograms();
+  initializeScreenquad();
 }
 
 //cpu representations
@@ -287,11 +292,6 @@ void ApplicationSolar::uploadUniforms_s()
 // LEFT/RIGHT - rotate vertical
 void ApplicationSolar::keyCallback(int key, int scancode, int action, int mods)
 {
-    static bool is_greyscale = false;
-    static bool is_mirror_h = false;
-    static bool is_mirror_v = false;
-    static bool is_gausblur = false;
-    
     //chosen key w and it is pressed
   if (key == GLFW_KEY_W && action == GLFW_PRESS)
   {
@@ -337,62 +337,6 @@ void ApplicationSolar::keyCallback(int key, int scancode, int action, int mods)
   else if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS)
   {
       m_view_transform = glm::rotate(m_view_transform, -0.1f, glm::fvec3{0.0f, 0.1f, 0.0f});
-  }
-  else if (key == GLFW_KEY_7 && action == GLFW_PRESS)
-  {
-      glUseProgram(m_shaders.at("planet").handle);
-      if (!is_greyscale)
-      {
-          glUniform1i(glGetUniformLocation(m_shaders.at("planet").handle, "greyscale"), 1);
-          is_greyscale = true;
-      }
-      else
-      {
-          glUniform1i(glGetUniformLocation(m_shaders.at("planet").handle, "greyscale"), 0);
-          is_greyscale = false;
-      }
-  }
-  else if (key == GLFW_KEY_8 && action == GLFW_PRESS)
-  {
-      glUseProgram(m_shaders.at("planet").handle);
-      if (!is_mirror_h)
-      {
-          glUniform1i(glGetUniformLocation(m_shaders.at("planet").handle, "mirror_horiz"), 1);
-          is_mirror_h = true;
-      }
-      else
-      {
-          glUniform1i(glGetUniformLocation(m_shaders.at("planet").handle, "mirror_horiz"), 0);
-          is_mirror_h = false;
-      }
-  }
-  else if (key == GLFW_KEY_9 && action == GLFW_PRESS)
-  {
-      glUseProgram(m_shaders.at("planet").handle);
-      if (!is_mirror_v)
-      {
-          glUniform1i(glGetUniformLocation(m_shaders.at("planet").handle, "mirror_vert"), 1);
-          is_mirror_v = true;
-      }
-      else
-      {
-          glUniform1i(glGetUniformLocation(m_shaders.at("planet").handle, "mirror_vert"), 0);
-          is_mirror_v = false;
-      }
-  }
-  else if (key == GLFW_KEY_0 && action == GLFW_PRESS)
-  {
-      glUseProgram(m_shaders.at("planet").handle);
-      if(!is_gausblur)
-      {
-          glUniform1i(glGetUniformLocation(m_shaders.at("planet").handle, "gaus_blur"), 1);
-          is_gausblur = true;
-      }
-      else
-      {
-          glUniform1i(glGetUniformLocation(m_shaders.at("planet").handle, "gaus_blur"), 0);
-          is_gausblur = false;
-      }
   }
   else
   {
@@ -522,6 +466,68 @@ void ApplicationSolar::initializeGeometry()
     glEnableVertexAttribArray(1);
     // second attribute is 3 floats with no offset & stride
     glVertexAttribPointer(1, model::NORMAL.components, model::NORMAL.type, GL_FALSE, star_model.vertex_bytes, star_model.offsets[model::NORMAL]);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+}
+
+void ApplicationSolar::initializeRenderbuffer()
+{
+    glGenRenderbuffers(1, &rb_handle);
+    glBindRenderbuffer(GL_RENDERBUFFER, rb_handle);
+    glRenderbufferStorage(GL_RENDERBUFFER,GL_DEPTH_COMPONENT24, 600, 600);
+}
+
+void ApplicationSolar::initializeFramebuffer()
+{
+    glGenTextures(1, &ScreenquadTexture.obj_ptr);
+    glBindTexture(GL_TEXTURE_2D, ScreenquadTexture.obj_ptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GLint(GL_LINEAR));
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GLint(GL_LINEAR));
+    glTexImage2D(GL_TEXTURE_2D, 0, GLint(GL_RGBA8), 600, 600, 0, GL_BGRA, GL_UNSIGNED_BYTE, NULL);
+    
+    glGenFramebuffers(1, &fbo_handle);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo_handle);
+    
+    glFramebufferTexture(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0, ScreenquadTexture.obj_ptr, 0);
+    
+    glFramebufferRenderbuffer(
+                              GL_FRAMEBUFFER,
+                              GL_DEPTH_ATTACHMENT,
+                              GL_RENDERBUFFER_EXT,
+                              rb_handle
+                              );
+    
+    GLenum draw_buffers[1] = {GL_COLOR_ATTACHMENT0};
+    glDrawBuffers(1, draw_buffers);
+}
+
+void ApplicationSolar::initializeScreenquad()
+{
+    std::vector<GLfloat> vertices
+    {
+        -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+        1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+        -1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+        1.0f, 1.0f, 0.0f, 1.0f, 1.0f
+    };
+    std::vector<GLuint> indices
+    {
+        0, 1, 2,
+        0, 2, 3
+    };
+
+    auto num_bytes = 5 * sizeof(GLfloat);
+    glGenVertexArrays(1, &ScreenquadObject.vertex_AO);
+    glBindVertexArray(ScreenquadObject.vertex_AO);
+    glGenBuffers(1, &ScreenquadObject.vertex_BO);
+    glBindBuffer(GL_ARRAY_BUFFER, ScreenquadObject.vertex_BO);
+    glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(GLsizei(sizeof(float) * vertices.size())), vertices.data(), GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    uintptr_t offset0 = 0 * sizeof(GLfloat);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, GLsizei(num_bytes), (const GLvoid*) offset0);
+    glEnableVertexAttribArray(1);
+    uintptr_t offset1 = 3 * sizeof(GLfloat);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, GLsizei(num_bytes), (const GLvoid*) offset1);
 }
 
 ApplicationSolar::~ApplicationSolar()

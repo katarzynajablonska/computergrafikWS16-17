@@ -23,7 +23,6 @@ struct model_object {
   GLsizei num_elements = 0;
 };
 
-//DODANE
 struct star_object
 {
     // vertex array object
@@ -31,7 +30,6 @@ struct star_object
     // vertex buffer object
     GLuint vertex_BO = 0;
 };
-//DODANE
 
 // gpu representation of texture
 struct texture_object {
@@ -55,7 +53,20 @@ struct planet
     float color_g;
     float color_b;
     texture_object texture;
-    
+};
+
+struct screenquad_object
+{
+    GLuint vertex_AO = 0;
+    GLuint vertex_BO = 0;
+    GLuint element_BO = 0;
+};
+
+struct framebuffer_object
+{
+    GLenum context = GL_TEXTURE0;
+    GLenum target = GL_TEXTURE_2D;
+    GLuint obj_ptr = 0;
 };
 
 // shader handle and uniform storage
