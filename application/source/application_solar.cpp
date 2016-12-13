@@ -67,7 +67,6 @@ texture_object texture_object_neptune{};
 texture_object texture_object_sun{};
 texture_object texture_object_moon{};
 texture_object texture_object_universe{};
-
 framebuffer_object ScreenquadTexture;
 screenquad_object ScreenquadObject;
 GLuint rb_handle;
@@ -89,12 +88,13 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
  ,planet_object{}
 {
   int new_stars_size = number_of_stars * 3;
-  //here the container is being resized and filled with random X,Y,Z-position values of our stars
+    //here the container is being resized and filled with random X,Y,Z-position values of our stars
   stars.resize(new_stars_size);
-    for (int i = 0 ; i<new_stars_size; i++)
+    std::generate(stars.begin(), stars.end(),
+    [&]
     {
-        stars[i] =  generate_random_numbers(-100.0f, 100.0f);
-    }
+        return generate_random_numbers(-100.0f, 100.0f);
+    });
     //and now, here we try to do what we wanted to before: create sth like model star_model{stars, model::POSITION|model::NORMAL}. For this we had to basically copy and modify a little bit the constructor from model.cpp file
   star_model.data = stars;
   model::attrib_flag_t contained_attributes = model::POSITION|model::NORMAL;
@@ -194,9 +194,16 @@ void ApplicationSolar::upload_planet_transforms(planet const& model) const
 void ApplicationSolar::render() const
 {
     glBindFramebuffer(GL_FRAMEBUFFER, fbo_handle);
+    
     glClearColor(0.0, 0.0, 0.0, 0.0);
     glClearDepth(1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
+    // bind new shader
+    glUseProgram(m_shaders.at("star").handle);
+    // bind the VAO to draw
+    glBindVertexArray(star.vertex_AO);
+    glDrawArrays(gl::GL_POINTS, 0, star_model.vertex_num);
     
     //bind shader to upload uniforms
     glUseProgram(m_shaders.at("planet").handle);
@@ -225,23 +232,18 @@ void ApplicationSolar::render() const
         normal_matrix = {};
     }
     
-    // bind new shader
-    glUseProgram(m_shaders.at("star").handle);
-    // bind the VAO to draw
-    glBindVertexArray(star.vertex_AO);
-    glDrawArrays(gl::GL_POINTS, 0, star_model.vertex_num);
-    
-    //drawig the screen quad
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glClearColor(0.0, 0.0, 0.0, 0.0);
     glClearDepth(1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glUseProgram(m_shaders.at("planet").handle);
+    //drawing the screen quad
+    glUseProgram(m_shaders.at("screenquad").handle);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, ScreenquadTexture.obj_ptr);
-    glUniform1i(m_shaders.at("planet").u_locs.at("colorTex"), 0);
+    glUniform1i(m_shaders.at("screenquad").u_locs.at("ColorTex"), 0);
+    
     glBindVertexArray(ScreenquadObject.vertex_AO);
-    utils::validate_program(m_shaders.at("planet").handle);
+    utils::validate_program(m_shaders.at("screenquad").handle);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
 
@@ -253,6 +255,7 @@ void ApplicationSolar::updateView()
     // vertices are transformed in camera space, so camera transform must be inverted
     glm::fmat4 view_matrix = glm::inverse(m_view_transform);
     // upload matrix to gpu
+    glUseProgram(m_shaders.at("planet").handle);
     glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ViewMatrix"),
                            1, GL_FALSE, glm::value_ptr(view_matrix));
     glm::fvec4 temp = view_matrix * glm::fvec4{0.0f, 0.0f, 0.0f, 1.0};
@@ -261,7 +264,8 @@ void ApplicationSolar::updateView()
     glUniformMatrix4fv(m_shaders.at("star").u_locs.at("ViewMatrix"),
                        1, GL_FALSE, glm::value_ptr(view_matrix));
     glUseProgram(m_shaders.at("planet").handle);
-    glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ViewMatrix"), 1, GL_FALSE, glm::value_ptr(view_matrix));
+    glUseProgram(m_shaders.at("screenquad").handle);
+    glUniformMatrix4fv(m_shaders.at("screenquad").u_locs.at("ViewMatrix"), 1, GL_FALSE, glm::value_ptr(view_matrix));
 }
 
 void ApplicationSolar::updateProjection()
@@ -314,10 +318,10 @@ void ApplicationSolar::uploadUniforms_s()
 // LEFT/RIGHT - rotate vertical
 void ApplicationSolar::keyCallback(int key, int scancode, int action, int mods)
 {
-    static bool is_greyscale = false;
-    static bool is_mirror_h = false;
-    static bool is_mirror_v = false;
-    static bool is_gausblur = false;
+  static bool is_greyscale = false;
+  static bool is_mirror_h = false;
+  static bool is_mirror_v = false;
+  static bool is_gausblur = false;
     
     //chosen key w and it is pressed
   if (key == GLFW_KEY_W && action == GLFW_PRESS)
@@ -367,57 +371,57 @@ void ApplicationSolar::keyCallback(int key, int scancode, int action, int mods)
   }
   else if (key == GLFW_KEY_7 && action == GLFW_PRESS)
   {
-      glUseProgram(m_shaders.at("planet").handle);
+      glUseProgram(m_shaders.at("screenquad").handle);
       if (!is_greyscale)
       {
-          glUniform1i(glGetUniformLocation(m_shaders.at("planet").handle, "greyscale"), 1);
+          glUniform1i(glGetUniformLocation(m_shaders.at("screenquad").handle, "greyscale"), 1);
           is_greyscale = true;
       }
       else
       {
-          glUniform1i(glGetUniformLocation(m_shaders.at("planet").handle, "greyscale"), 0);
+          glUniform1i(glGetUniformLocation(m_shaders.at("screenquad").handle, "greyscale"), 0);
           is_greyscale = false;
       }
   }
   else if (key == GLFW_KEY_8 && action == GLFW_PRESS)
   {
-      glUseProgram(m_shaders.at("planet").handle);
+      glUseProgram(m_shaders.at("screenquad").handle);
       if (!is_mirror_h)
       {
-          glUniform1i(glGetUniformLocation(m_shaders.at("planet").handle, "mirror_horiz"), 1);
+          glUniform1i(glGetUniformLocation(m_shaders.at("screenquad").handle, "mirror_horiz"), 1);
           is_mirror_h = true;
       }
       else
       {
-          glUniform1i(glGetUniformLocation(m_shaders.at("planet").handle, "mirror_horiz"), 0);
+          glUniform1i(glGetUniformLocation(m_shaders.at("screenquad").handle, "mirror_horiz"), 0);
           is_mirror_h = false;
       }
   }
   else if (key == GLFW_KEY_9 && action == GLFW_PRESS)
   {
-      glUseProgram(m_shaders.at("planet").handle);
+      glUseProgram(m_shaders.at("screenquad").handle);
       if (!is_mirror_v)
       {
-          glUniform1i(glGetUniformLocation(m_shaders.at("planet").handle, "mirror_vert"), 1);
+          glUniform1i(glGetUniformLocation(m_shaders.at("screenquad").handle, "mirror_vert"), 1);
           is_mirror_v = true;
       }
       else
       {
-          glUniform1i(glGetUniformLocation(m_shaders.at("planet").handle, "mirror_vert"), 0);
+          glUniform1i(glGetUniformLocation(m_shaders.at("screenquad").handle, "mirror_vert"), 0);
           is_mirror_v = false;
       }
   }
   else if (key == GLFW_KEY_0 && action == GLFW_PRESS)
   {
-      glUseProgram(m_shaders.at("planet").handle);
+      glUseProgram(m_shaders.at("screenquad").handle);
       if(!is_gausblur)
       {
-          glUniform1i(glGetUniformLocation(m_shaders.at("planet").handle, "gaus_blur"), 1);
+          glUniform1i(glGetUniformLocation(m_shaders.at("screenquad").handle, "gaus_blur"), 1);
           is_gausblur = true;
       }
       else
       {
-          glUniform1i(glGetUniformLocation(m_shaders.at("planet").handle, "gaus_blur"), 0);
+          glUniform1i(glGetUniformLocation(m_shaders.at("screenquad").handle, "gaus_blur"), 0);
           is_gausblur = false;
       }
   }
@@ -470,8 +474,10 @@ void ApplicationSolar::initializeShaderPrograms()
   // store shader program objects in container
   m_shaders.emplace("planet", shader_program{m_resource_path + "shaders/simple.vert",
                                            m_resource_path + "shaders/simple.frag"});
-    m_shaders.emplace("star", shader_program{m_resource_path + "shaders/stars.vert",
+  m_shaders.emplace("star", shader_program{m_resource_path + "shaders/stars.vert",
         m_resource_path + "shaders/stars.frag"});
+  m_shaders.emplace("screenquad", shader_program{m_resource_path + "shaders/screenquad.vert",
+        m_resource_path + "shaders/screenquad.frag"});
   // request uniform locations for shader program
   m_shaders.at("planet").u_locs["NormalMatrix"] = -1;
   m_shaders.at("planet").u_locs["ModelMatrix"] = -1;
@@ -482,6 +488,14 @@ void ApplicationSolar::initializeShaderPrograms()
   m_shaders.at("planet").u_locs["ColorTex"] = -1;
   m_shaders.at("star").u_locs["ViewMatrix"] = -1;
   m_shaders.at("star").u_locs["ProjectionMatrix"] = -1;
+  m_shaders.at("screenquad").u_locs["ModelMatrix"] = -1;
+  m_shaders.at("screenquad").u_locs["ViewMatrix"] = -1;
+  m_shaders.at("screenquad").u_locs["ProjectionMatrix"] = -1;
+  m_shaders.at("screenquad").u_locs["ColorTex"] = -1;
+  m_shaders.at("screenquad").u_locs["greyscale"] = -1;
+  m_shaders.at("screenquad").u_locs["mirror_horiz"] = -1;
+  m_shaders.at("screenquad").u_locs["mirror_vert"] = -1;
+  m_shaders.at("screenquad").u_locs["gaus_blur"] = -1;
 }
 
 // load models
@@ -549,39 +563,8 @@ void ApplicationSolar::initializeGeometry()
     glEnableVertexAttribArray(1);
     // second attribute is 3 floats with no offset & stride
     glVertexAttribPointer(1, model::NORMAL.components, model::NORMAL.type, GL_FALSE, star_model.vertex_bytes, star_model.offsets[model::NORMAL]);
-    
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
-}
-
-void ApplicationSolar::initializeScreenquad()
-{
-    std::vector<GLfloat> vertices
-    {
-        -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-        1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-        -1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-        1.0f, 1.0f, 0.0f, 1.0f, 1.0f
-    };
-    
-    std::vector<GLuint> indices
-    {
-        0, 1, 2,
-        0, 2, 3
-    };
-    
-    auto num_bytes = 5 * sizeof(GLfloat);
-    glGenVertexArrays(1, &ScreenquadObject.vertex_AO);
-    glBindVertexArray(ScreenquadObject.vertex_AO);
-    glGenBuffers(1, &ScreenquadObject.vertex_BO);
-    glBindBuffer(GL_ARRAY_BUFFER, ScreenquadObject.vertex_BO);
-    glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(GLsizei(sizeof(float) * vertices.size())), vertices.data(), GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    uintptr_t offset0 = 0 * sizeof(GLfloat);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, GLsizei(num_bytes), (const GLvoid*) offset0);
-    glEnableVertexAttribArray(1);
-    uintptr_t offset1 = 3 * sizeof(GLfloat);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, GLsizei(num_bytes), (const GLvoid*) offset1);
 }
 
 void ApplicationSolar::initializeRenderbuffer()
@@ -602,7 +585,7 @@ void ApplicationSolar::initializeFramebuffer()
     glGenFramebuffers(1, &fbo_handle);
     glBindFramebuffer(GL_FRAMEBUFFER, fbo_handle);
     
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, ScreenquadTexture.obj_ptr,0);
+    glFramebufferTexture(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0, ScreenquadTexture.obj_ptr, 0);
     
     glFramebufferRenderbuffer(
                               GL_FRAMEBUFFER,
@@ -613,6 +596,35 @@ void ApplicationSolar::initializeFramebuffer()
     
     GLenum draw_buffers[1] = {GL_COLOR_ATTACHMENT0};
     glDrawBuffers(1, draw_buffers);
+}
+
+void ApplicationSolar::initializeScreenquad()
+{
+    std::vector<GLfloat> vertices
+    {
+        -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+        1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+        -1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+        1.0f, 1.0f, 0.0f, 1.0f, 1.0f
+    };
+    std::vector<GLuint> indices
+    {
+        0, 1, 2,
+        0, 2, 3
+    };
+
+    auto num_bytes = 5 * sizeof(GLfloat);
+    glGenVertexArrays(1, &ScreenquadObject.vertex_AO);
+    glBindVertexArray(ScreenquadObject.vertex_AO);
+    glGenBuffers(1, &ScreenquadObject.vertex_BO);
+    glBindBuffer(GL_ARRAY_BUFFER, ScreenquadObject.vertex_BO);
+    glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(GLsizei(sizeof(float) * vertices.size())), vertices.data(), GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    uintptr_t offset0 = 0 * sizeof(GLfloat);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, GLsizei(num_bytes), (const GLvoid*) offset0);
+    glEnableVertexAttribArray(1);
+    uintptr_t offset1 = 3 * sizeof(GLfloat);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, GLsizei(num_bytes), (const GLvoid*) offset1);
 }
 
 ApplicationSolar::~ApplicationSolar()
