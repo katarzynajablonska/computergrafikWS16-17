@@ -34,8 +34,11 @@ class Application {
 
   std::string m_resource_path; 
 
-  glm::fmat4 m_view_transform;
-  glm::fmat4 m_view_projection;
+  struct block_matrix
+  {
+      glm::fmat4 m_view_transform;
+      glm::fmat4 m_view_projection;
+  }block_matrix_data;
 
   // container for the shader programs
   std::map<std::string, shader_program> m_shaders{};

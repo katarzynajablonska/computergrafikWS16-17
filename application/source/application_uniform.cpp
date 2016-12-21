@@ -52,7 +52,7 @@ void ApplicationUniform::render() const {
 
 void ApplicationUniform::updateProjection() {
   // upload matrix to gpu
-  glUniformMatrix4fv(m_ul_projection, 1, GL_FALSE, glm::value_ptr(m_view_projection));
+  glUniformMatrix4fv(m_ul_projection, 1, GL_FALSE, glm::value_ptr(block_matrix_data.m_view_projection));
 }
 
 // callback after shader reloading

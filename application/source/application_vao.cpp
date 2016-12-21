@@ -113,7 +113,7 @@ void ApplicationVao::render() const {
 void ApplicationVao::updateProjection() {
   // upload matrix to gpu
   glUniformMatrix4fv(m_shaders.at("vao").u_locs.at("ProjectionMatrix"),
-                     1, GL_FALSE, glm::value_ptr(m_view_projection));
+                     1, GL_FALSE, glm::value_ptr(block_matrix_data.m_view_projection));
 }
 
 // callback after shader reloading

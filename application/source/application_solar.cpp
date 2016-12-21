@@ -188,7 +188,7 @@ void ApplicationSolar::upload_planet_transforms(planet const& model) const
     //scaling the matrix comes as the last operation for each object in properties[]
     model_matrix = glm::scale(model_matrix, glm::fvec3{model.size, model.size, model.size});
     //additionally, we also compute the normal_matrix in this function - extra matrix for normal transformation to keep the planets orthogonal to surface
-    normal_matrix = glm::inverseTranspose(glm::inverse(m_view_transform) * model_matrix);
+    normal_matrix = glm::inverseTranspose(glm::inverse(block_matrix_data.m_view_transform) * model_matrix);
 }
 
 void ApplicationSolar::render() const
@@ -253,7 +253,7 @@ void ApplicationSolar::updateView()
     initializeRenderbuffer();
     initializeFramebuffer();
     // vertices are transformed in camera space, so camera transform must be inverted
-    glm::fmat4 view_matrix = glm::inverse(m_view_transform);
+    glm::fmat4 view_matrix = glm::inverse(block_matrix_data.m_view_transform);
     // upload matrix to gpu
     glUseProgram(m_shaders.at("planet").handle);
     glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ViewMatrix"),
@@ -273,10 +273,10 @@ void ApplicationSolar::updateProjection()
   // upload matrix to gpu
   glUseProgram(m_shaders.at("planet").handle);
   glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ProjectionMatrix"),
-                     1, GL_FALSE, glm::value_ptr(m_view_projection));
+                     1, GL_FALSE, glm::value_ptr(block_matrix_data.m_view_projection));
   glUseProgram(m_shaders.at("star").handle);
   glUniformMatrix4fv(m_shaders.at("star").u_locs.at("ProjectionMatrix"),
-                       1, GL_FALSE, glm::value_ptr(m_view_projection));
+                       1, GL_FALSE, glm::value_ptr(block_matrix_data.m_view_projection));
 }
 
 // update uniform locations
@@ -326,48 +326,48 @@ void ApplicationSolar::keyCallback(int key, int scancode, int action, int mods)
     //chosen key w and it is pressed
   if (key == GLFW_KEY_W && action == GLFW_PRESS)
   {
-    //m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f, 0.0f, -0.1f});
+    //block_matrix_data.m_view_transform = glm::translate(block_matrix_data.m_view_transform, glm::fvec3{0.0f, 0.0f, -0.1f});
       //changed the 3rd value of the glm::fvec3, so that we can see some reasonable change
-    m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f, 0.0f, -1.0f});
+    block_matrix_data.m_view_transform = glm::translate(block_matrix_data.m_view_transform, glm::fvec3{0.0f, 0.0f, -1.0f});
   }
   else if (key == GLFW_KEY_S && action == GLFW_PRESS)
   {
-    //m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f, 0.0f, 0.1f});
-    m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f, 0.0f, 1.0f});
+    //block_matrix_data.m_view_transform = glm::translate(block_matrix_data.m_view_transform, glm::fvec3{0.0f, 0.0f, 0.1f});
+    block_matrix_data.m_view_transform = glm::translate(block_matrix_data.m_view_transform, glm::fvec3{0.0f, 0.0f, 1.0f});
   }
   //arrow up
   else if (key == GLFW_KEY_DOWN && action == GLFW_PRESS)
   {
-      m_view_transform = glm::rotate(m_view_transform, 0.1f, glm::fvec3{1.0f, 0.0f, 0.0f});
+      block_matrix_data.m_view_transform = glm::rotate(block_matrix_data.m_view_transform, 0.1f, glm::fvec3{1.0f, 0.0f, 0.0f});
   }
   //arrow down
   else if (key == GLFW_KEY_UP && action == GLFW_PRESS)
   {
-      m_view_transform = glm::rotate(m_view_transform, -0.1f, glm::fvec3{1.0f, 0.0f, 0.0f});
+      block_matrix_data.m_view_transform = glm::rotate(block_matrix_data.m_view_transform, -0.1f, glm::fvec3{1.0f, 0.0f, 0.0f});
   }
   else if (key == GLFW_KEY_L && action == GLFW_PRESS)
   {
-      m_view_transform = glm::translate(m_view_transform, glm::fvec3{-0.1f, 0.0f, 0.0f});
+      block_matrix_data.m_view_transform = glm::translate(block_matrix_data.m_view_transform, glm::fvec3{-0.1f, 0.0f, 0.0f});
   }
   else if (key == GLFW_KEY_H && action == GLFW_PRESS)
   {
-      m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.1f, 0.0f, 0.0f});
+      block_matrix_data.m_view_transform = glm::translate(block_matrix_data.m_view_transform, glm::fvec3{0.1f, 0.0f, 0.0f});
   }
   else if (key == GLFW_KEY_K && action == GLFW_PRESS)
   {
-      m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f, -0.1f, 0.0f});
+      block_matrix_data.m_view_transform = glm::translate(block_matrix_data.m_view_transform, glm::fvec3{0.0f, -0.1f, 0.0f});
   }
   else if (key == GLFW_KEY_J && action == GLFW_PRESS)
   {
-      m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f, 0.1f, 0.0f});
+      block_matrix_data.m_view_transform = glm::translate(block_matrix_data.m_view_transform, glm::fvec3{0.0f, 0.1f, 0.0f});
   }
   else if (key == GLFW_KEY_LEFT && action == GLFW_PRESS)
   {
-      m_view_transform = glm::rotate(m_view_transform, 0.1f, glm::fvec3{0.0f, 0.1f, 0.0f});
+      block_matrix_data.m_view_transform = glm::rotate(block_matrix_data.m_view_transform, 0.1f, glm::fvec3{0.0f, 0.1f, 0.0f});
   }
   else if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS)
   {
-      m_view_transform = glm::rotate(m_view_transform, -0.1f, glm::fvec3{0.0f, 0.1f, 0.0f});
+      block_matrix_data.m_view_transform = glm::rotate(block_matrix_data.m_view_transform, -0.1f, glm::fvec3{0.0f, 0.1f, 0.0f});
   }
   else if (key == GLFW_KEY_7 && action == GLFW_PRESS)
   {
@@ -437,7 +437,7 @@ void ApplicationSolar::keyCallback(int key, int scancode, int action, int mods)
 void ApplicationSolar::mouseScrollCallback(double x, double y)
 {
     //scrolling changes the depth
-    m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f, 0.0f, y});
+    block_matrix_data.m_view_transform = glm::translate(block_matrix_data.m_view_transform, glm::fvec3{0.0f, 0.0f, y});
     updateView();
 }
 

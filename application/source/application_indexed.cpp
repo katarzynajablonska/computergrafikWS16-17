@@ -95,7 +95,7 @@ void ApplicationIndexed::render() const {
 void ApplicationIndexed::updateProjection() {
   // upload projection matrix
   glMatrixMode(GL_PROJECTION);
-  glLoadMatrixf(glm::value_ptr(m_view_projection));
+  glLoadMatrixf(glm::value_ptr(block_matrix_data.m_view_projection));
 }
 
 // exe entry point

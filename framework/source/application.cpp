@@ -10,12 +10,22 @@ using namespace gl;
 
 #include <iostream>
 
-Application::Application(std::string const& resource_path)
+/*Application::Application(std::string const& resource_path)
  :m_resource_path{resource_path}
- ,m_view_transform{glm::translate(glm::fmat4{}, glm::fvec3{0.0f, 0.0f, 4.0f})}
- ,m_view_projection{1.0}
+ ,block_matrix_data.m_view_transform{glm::translate(glm::fmat4{}, glm::fvec3{0.0f, 0.0f, 4.0f})}
+ ,block_matrix_data.m_view_projection{1.0}
  ,m_shaders{}
-{}
+{}*/
+
+// the constructor needed to be changed because there was some weird problem with
+// block_matrix_data.m_view_transform and block_matrix_data.m_view_projection in the member init list
+Application::Application(std::string const& resource_path)
+{
+    m_resource_path = resource_path;
+    block_matrix_data.m_view_transform = glm::translate(glm::fmat4{}, glm::fvec3{0.0f, 0.0f, 4.0f});
+    block_matrix_data.m_view_projection = glm::fmat4{1.0};
+    m_shaders = {};
+}
 
 Application::~Application() {
   // free all shader program objects
@@ -25,7 +35,7 @@ Application::~Application() {
 }
 
 void Application::setProjection(glm::fmat4 const& projection_mat) {
-  m_view_projection = projection_mat;
+  block_matrix_data.m_view_projection = projection_mat;
   updateProjection();
 }
 

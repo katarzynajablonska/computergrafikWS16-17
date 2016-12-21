@@ -6,8 +6,13 @@ layout(location = 0) in vec3 in_Position;
 layout(location = 1) in vec3 in_Color;
 
 //Matrix Uniforms uploaded with glUniform*
-uniform mat4 ModelViewMatrix;
-uniform mat4 ProjectionMatrix;
+// the variables within the block are still part of the global scope and do not need to
+// be qualified with the block name
+uniform block_matrix
+{
+    mat4 ModelViewMatrix;
+    mat4 ProjectionMatrix;
+};
 
 out vec3 pass_Color;
 
