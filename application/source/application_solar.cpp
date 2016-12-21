@@ -71,6 +71,7 @@ framebuffer_object ScreenquadTexture;
 screenquad_object ScreenquadObject;
 GLuint rb_handle;
 GLuint fbo_handle;
+GLuint ubo;
 
 //function forcalculating a random float within the interval (a,b)
 float ApplicationSolar::generate_random_numbers(float a, float b)
@@ -116,6 +117,7 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
   }
   // set number of vertice sin buffer
   star_model.vertex_num = star_model.data.size() / component_num;
+  initializeUniformbuffer();
   update_textures();
   initializeGeometry();
   initializeShaderPrograms();
@@ -625,6 +627,11 @@ void ApplicationSolar::initializeScreenquad()
     glEnableVertexAttribArray(1);
     uintptr_t offset1 = 3 * sizeof(GLfloat);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, GLsizei(num_bytes), (const GLvoid*) offset1);
+}
+
+void ApplicationSolar::initializeUniformbuffer()
+{
+    
 }
 
 ApplicationSolar::~ApplicationSolar()

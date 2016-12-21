@@ -7,7 +7,7 @@ layout(location = 2) in vec2 in_TexCoord;
 
 // the variables within the block are still part of the global scope and do not need to
 // be qualified with the block name
-uniform block_matrix
+layout (std140) uniform block_matrix
 {
     mat4 ViewMatrix;
     mat4 ProjectionMatrix;

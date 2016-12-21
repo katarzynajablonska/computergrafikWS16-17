@@ -39,6 +39,7 @@ class ApplicationSolar : public Application {
   void initializeRenderbuffer();
   void initializeFramebuffer();
   void initializeScreenquad();
+  void initializeUniformbuffer();
   void updateView();
 
   // cpu representation of model
