@@ -13,6 +13,11 @@ layout (std140) uniform block_matrix
     mat4 ProjectionMatrix;
 };
 
+layout (std140) buffer light_data
+{
+    std::vector<vec3> lights;
+}
+
 //Matrix Uniforms as specified with glUniformMatrix4fv
 uniform mat4 ModelMatrix;
 uniform mat4 NormalMatrix;
