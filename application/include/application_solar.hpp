@@ -41,6 +41,7 @@ class ApplicationSolar : public Application {
   void initializeScreenquad();
   void initializeUniformbuffer();
   void updateView();
+  void updateMatrices();
 
   // cpu representation of model
   model_object planet_object;

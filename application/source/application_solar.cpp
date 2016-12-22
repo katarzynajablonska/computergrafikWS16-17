@@ -72,6 +72,7 @@ screenquad_object ScreenquadObject;
 GLuint rb_handle;
 GLuint fbo_handle;
 GLuint ubo;
+GLuint bindingPoint = 1;
 
 //function forcalculating a random float within the interval (a,b)
 float ApplicationSolar::generate_random_numbers(float a, float b)
@@ -117,11 +118,11 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
   }
   // set number of vertice sin buffer
   star_model.vertex_num = star_model.data.size() / component_num;
-  initializeUniformbuffer();
   update_textures();
   initializeGeometry();
   initializeShaderPrograms();
   initializeScreenquad();
+  initializeUniformbuffer();
 }
 
 //cpu representations
@@ -328,48 +329,56 @@ void ApplicationSolar::keyCallback(int key, int scancode, int action, int mods)
     //chosen key w and it is pressed
   if (key == GLFW_KEY_W && action == GLFW_PRESS)
   {
-    //block_matrix_data.m_view_transform = glm::translate(block_matrix_data.m_view_transform, glm::fvec3{0.0f, 0.0f, -0.1f});
       //changed the 3rd value of the glm::fvec3, so that we can see some reasonable change
     block_matrix_data.m_view_transform = glm::translate(block_matrix_data.m_view_transform, glm::fvec3{0.0f, 0.0f, -1.0f});
+    updateMatrices();
   }
   else if (key == GLFW_KEY_S && action == GLFW_PRESS)
   {
-    //block_matrix_data.m_view_transform = glm::translate(block_matrix_data.m_view_transform, glm::fvec3{0.0f, 0.0f, 0.1f});
     block_matrix_data.m_view_transform = glm::translate(block_matrix_data.m_view_transform, glm::fvec3{0.0f, 0.0f, 1.0f});
+    updateMatrices();
   }
   //arrow up
   else if (key == GLFW_KEY_DOWN && action == GLFW_PRESS)
   {
       block_matrix_data.m_view_transform = glm::rotate(block_matrix_data.m_view_transform, 0.1f, glm::fvec3{1.0f, 0.0f, 0.0f});
+      updateMatrices();
   }
   //arrow down
   else if (key == GLFW_KEY_UP && action == GLFW_PRESS)
   {
       block_matrix_data.m_view_transform = glm::rotate(block_matrix_data.m_view_transform, -0.1f, glm::fvec3{1.0f, 0.0f, 0.0f});
+      updateMatrices();
   }
   else if (key == GLFW_KEY_L && action == GLFW_PRESS)
   {
       block_matrix_data.m_view_transform = glm::translate(block_matrix_data.m_view_transform, glm::fvec3{-0.1f, 0.0f, 0.0f});
+      updateMatrices();
   }
   else if (key == GLFW_KEY_H && action == GLFW_PRESS)
   {
       block_matrix_data.m_view_transform = glm::translate(block_matrix_data.m_view_transform, glm::fvec3{0.1f, 0.0f, 0.0f});
+      updateMatrices();
   }
   else if (key == GLFW_KEY_K && action == GLFW_PRESS)
   {
       block_matrix_data.m_view_transform = glm::translate(block_matrix_data.m_view_transform, glm::fvec3{0.0f, -0.1f, 0.0f});
+      updateMatrices();
   }
   else if (key == GLFW_KEY_J && action == GLFW_PRESS)
   {
       block_matrix_data.m_view_transform = glm::translate(block_matrix_data.m_view_transform, glm::fvec3{0.0f, 0.1f, 0.0f});
+      updateMatrices();
   }
   else if (key == GLFW_KEY_LEFT && action == GLFW_PRESS)
   {
       block_matrix_data.m_view_transform = glm::rotate(block_matrix_data.m_view_transform, 0.1f, glm::fvec3{0.0f, 0.1f, 0.0f});
+      updateMatrices();
   }
   else if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS)
   {
       block_matrix_data.m_view_transform = glm::rotate(block_matrix_data.m_view_transform, -0.1f, glm::fvec3{0.0f, 0.1f, 0.0f});
+      updateMatrices();
   }
   else if (key == GLFW_KEY_7 && action == GLFW_PRESS)
   {
@@ -440,6 +449,7 @@ void ApplicationSolar::mouseScrollCallback(double x, double y)
 {
     //scrolling changes the depth
     block_matrix_data.m_view_transform = glm::translate(block_matrix_data.m_view_transform, glm::fvec3{0.0f, 0.0f, y});
+    updateMatrices();
     updateView();
 }
 
@@ -631,7 +641,30 @@ void ApplicationSolar::initializeScreenquad()
 
 void ApplicationSolar::initializeUniformbuffer()
 {
+    GLuint blockIndex_planet, blockIndex_stars;
     
+    glUseProgram(m_shaders.at("planet").handle);
+    blockIndex_planet = glGetUniformBlockIndex(m_shaders.at("planet").handle, "block_matrix");
+    glUniformBlockBinding(m_shaders.at("planet").handle, blockIndex_planet, bindingPoint);
+    
+    //the same binding point because shaders share the same data
+    glUseProgram(m_shaders.at("star").handle);
+    blockIndex_stars = glGetUniformBlockIndex(m_shaders.at("star").handle, "block_matrix");
+    glUniformBlockBinding(m_shaders.at("star").handle, blockIndex_stars, bindingPoint);
+    
+    glGenBuffers(1, &ubo);
+    glBindBuffer(GL_UNIFORM_BUFFER, ubo);
+    glBufferData(GL_UNIFORM_BUFFER, 2*sizeof(float)*4*4, 0, GL_STREAM_DRAW);
+    
+    glBindBufferBase(GL_UNIFORM_BUFFER, bindingPoint, ubo);
+}
+
+void ApplicationSolar::updateMatrices()
+{
+    glBindBuffer(GL_UNIFORM_BUFFER, ubo);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(float)*4*4, glm::value_ptr(block_matrix_data.m_view_transform));
+    glBufferSubData(GL_UNIFORM_BUFFER, sizeof(float)*4*4, sizeof(float)*4*4, glm::value_ptr(block_matrix_data.m_view_projection));
+    glBindBufferRange(GL_UNIFORM_BUFFER, bindingPoint, ubo, 0, sizeof(float)*4*4*9);
 }
 
 ApplicationSolar::~ApplicationSolar()
