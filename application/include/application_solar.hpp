@@ -39,7 +39,7 @@ class ApplicationSolar : public Application {
   void initializeRenderbuffer();
   void initializeFramebuffer();
   void initializeScreenquad();
-  void initializeUniformbuffer();
+  void initializeUniformbuffer() const;
   void updateView();
   void updateMatrices();
 

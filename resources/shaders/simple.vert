@@ -5,24 +5,17 @@ layout(location = 0) in vec3 in_Position;
 layout(location = 1) in vec3 in_Normal;
 layout(location = 2) in vec2 in_TexCoord;
 
-// the variables within the block are still part of the global scope and do not need to
-// be qualified with the block name
-layout (std140) uniform block_matrix
-{
-    mat4 ViewMatrix;
-    mat4 ProjectionMatrix;
-};
-
-layout (std140) buffer light_data
-{
-    std::vector<vec3> lights;
-}
-
 //Matrix Uniforms as specified with glUniformMatrix4fv
 uniform mat4 ModelMatrix;
 uniform mat4 NormalMatrix;
 uniform vec3 Color;
 uniform vec3 Light;
+
+uniform BlockMatrix
+{
+    mat4 ViewMatrix;
+    mat4 ProjectionMatrix;
+};
 
 out vec3 pass_Normal;
 out vec3 pass_Color;

@@ -122,7 +122,6 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
   initializeGeometry();
   initializeShaderPrograms();
   initializeScreenquad();
-  initializeUniformbuffer();
 }
 
 //cpu representations
@@ -196,6 +195,7 @@ void ApplicationSolar::upload_planet_transforms(planet const& model) const
 
 void ApplicationSolar::render() const
 {
+    initializeUniformbuffer();
     glBindFramebuffer(GL_FRAMEBUFFER, fbo_handle);
     
     glClearColor(0.0, 0.0, 0.0, 0.0);
@@ -378,7 +378,6 @@ void ApplicationSolar::keyCallback(int key, int scancode, int action, int mods)
   else if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS)
   {
       block_matrix_data.m_view_transform = glm::rotate(block_matrix_data.m_view_transform, -0.1f, glm::fvec3{0.0f, 0.1f, 0.0f});
-      updateMatrices();
   }
   else if (key == GLFW_KEY_7 && action == GLFW_PRESS)
   {
@@ -449,7 +448,6 @@ void ApplicationSolar::mouseScrollCallback(double x, double y)
 {
     //scrolling changes the depth
     block_matrix_data.m_view_transform = glm::translate(block_matrix_data.m_view_transform, glm::fvec3{0.0f, 0.0f, y});
-    updateMatrices();
     updateView();
 }
 
@@ -639,17 +637,17 @@ void ApplicationSolar::initializeScreenquad()
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, GLsizei(num_bytes), (const GLvoid*) offset1);
 }
 
-void ApplicationSolar::initializeUniformbuffer()
+void ApplicationSolar::initializeUniformbuffer() const
 {
     GLuint blockIndex_planet, blockIndex_stars;
     
     glUseProgram(m_shaders.at("planet").handle);
-    blockIndex_planet = glGetUniformBlockIndex(m_shaders.at("planet").handle, "block_matrix");
+    blockIndex_planet = glGetUniformBlockIndex(m_shaders.at("planet").handle, "BlockMatrix");
     glUniformBlockBinding(m_shaders.at("planet").handle, blockIndex_planet, bindingPoint);
     
     //the same binding point because shaders share the same data
     glUseProgram(m_shaders.at("star").handle);
-    blockIndex_stars = glGetUniformBlockIndex(m_shaders.at("star").handle, "block_matrix");
+    blockIndex_stars = glGetUniformBlockIndex(m_shaders.at("star").handle, "BlockMatrix");
     glUniformBlockBinding(m_shaders.at("star").handle, blockIndex_stars, bindingPoint);
     
     glGenBuffers(1, &ubo);
@@ -657,6 +655,11 @@ void ApplicationSolar::initializeUniformbuffer()
     glBufferData(GL_UNIFORM_BUFFER, 2*sizeof(float)*4*4, 0, GL_STREAM_DRAW);
     
     glBindBufferBase(GL_UNIFORM_BUFFER, bindingPoint, ubo);
+    
+    glBindBuffer(GL_UNIFORM_BUFFER, ubo);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(float)*4*4, glm::value_ptr(block_matrix_data.m_view_transform));
+    glBufferSubData(GL_UNIFORM_BUFFER, sizeof(float)*4*4, sizeof(float)*4*4, glm::value_ptr(block_matrix_data.m_view_projection));
+    glBindBufferRange(GL_UNIFORM_BUFFER, bindingPoint, ubo, 0, sizeof(float)*4*4*9);
 }
 
 void ApplicationSolar::updateMatrices()
