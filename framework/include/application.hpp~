@@ -46,6 +46,8 @@ class Application {
     glm::fvec3 diffuse_app;
   }light_struct_data;
 
+  std::vector<light_struct> lights;
+
   // container for the shader programs
   std::map<std::string, shader_program> m_shaders{};
 };

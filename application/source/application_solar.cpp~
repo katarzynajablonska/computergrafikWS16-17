@@ -74,9 +74,7 @@ screenquad_object ScreenquadObject;
 GLuint rb_handle;
 GLuint fbo_handle;
 GLuint ubo;
-GLuint ssbo;
 GLuint bindingPoint = 1;
-GLuint bindingPoint_ssbo = 1;
 
 //function forcalculating a random float within the interval (a,b)
 float ApplicationSolar::generate_random_numbers(float a, float b)
@@ -203,7 +201,6 @@ void ApplicationSolar::upload_planet_transforms(planet const& model) const
 void ApplicationSolar::render() const
 {
     initializeUniformbuffer();
-    initializeShaderbuffers();
     glBindFramebuffer(GL_FRAMEBUFFER, fbo_handle);
     
     glClearColor(0.0, 0.0, 0.0, 0.0);
@@ -668,25 +665,6 @@ void ApplicationSolar::initializeUniformbuffer() const
     glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(float)*4*4, glm::value_ptr(block_matrix_data.m_view_transform));
     glBufferSubData(GL_UNIFORM_BUFFER, sizeof(float)*4*4, sizeof(float)*4*4, glm::value_ptr(block_matrix_data.m_view_projection));
     glBindBufferRange(GL_UNIFORM_BUFFER, bindingPoint, ubo, 0, sizeof(float)*4*4*9);
-}
-
-void ApplicationSolar::initializeShaderbuffers() const
-{
-  GLuint block_index;
-  glUseProgram(m_shaders.at("planet").handle);
-  block_index = glGetProgramResourceIndex(m_shaders.at("planet").handle, GL_SHADER_STORAGE_BLOCK, "lights");
-  glShaderStorageBlockBinding(m_shaders.at("planet").handle, block_index, bindingPoint_ssbo);
-
-  glGenBuffers(1, &ssbo);
-  glBindBuffer(GL_SHADER_STORAGE_BUFFER,ssbo);
-  glBufferData(GL_SHADER_STORAGE_BUFFER, 2*sizeof(float)*3, 0, GL_STREAM_DRAW);
-
-  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, bindingPoint_ssbo, ssbo);
-    
-  glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
-  glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(float)*3, glm::value_ptr(light_struct_data.ambient_app));
-  glBufferSubData(GL_SHADER_STORAGE_BUFFER, sizeof(float)*3, sizeof(float)*3, glm::value_ptr(light_struct_data.diffuse_app));
-  glBindBufferRange(GL_SHADER_STORAGE_BUFFER, bindingPoint_ssbo, ssbo, 0, sizeof(float)*3*9);
 }
 
 void ApplicationSolar::updateMatrices()

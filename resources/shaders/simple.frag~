@@ -21,7 +21,7 @@ struct Light
 	vec3 diffuse;
 }light_data;
 
-layout (std140) buffer lights
+layout buffer lights
 {
 	Light light[MAX_NUM_TOTAL_LIGHTS];
 	int numLights;
