@@ -58,6 +58,8 @@ pixel_data texture_neptune{};
 pixel_data texture_sun{};
 pixel_data texture_moon{};
 pixel_data texture_universe{};
+pixel_data bumpmap_data_mercury{};
+pixel_data bumpmap_data_earth{};
 texture_object texture_object_mercury{};
 texture_object texture_object_venus{};
 texture_object texture_object_earth{};
@@ -69,6 +71,18 @@ texture_object texture_object_neptune{};
 texture_object texture_object_sun{};
 texture_object texture_object_moon{};
 texture_object texture_object_universe{};
+//athough only two planets have bump maps assigned, we need the variables for all planets to "fulfil" the "planet" struct in structs.hpp
+texture_object bumpmap_mercury{};
+texture_object bumpmap_venus{};
+texture_object bumpmap_earth{};
+texture_object bumpmap_mars{};
+texture_object bumpmap_jupiter{};
+texture_object bumpmap_saturn{};
+texture_object bumpmap_uranus{};
+texture_object bumpmap_neptune{};
+texture_object bumpmap_sun{};
+texture_object bumpmap_moon{};
+texture_object bumpmap_universe{};
 framebuffer_object ScreenquadTexture;
 screenquad_object ScreenquadObject;
 GLuint rb_handle;
@@ -137,19 +151,19 @@ model_object planet_o{};
 model_object star{};
 
 //please find declaration of struct "planet" in framework/include/structs.hpp
-planet mercury_properties{mercury_model, planet_o, "Mercury",  0.3f, 0, 2.0f, 0.4314, 0.5412, 0.4941, texture_object_mercury};
-planet venus_properties{venus_model, planet_o, "Venus", 0.4f, 1, 6.0f, 0.5686, 0.3529, 0.0f, texture_object_venus};
-planet earth_properties{earth_model, planet_o, "Earth", 0.5f, 2, 9.0f, 0.2824, 0.2706, 0.6902, texture_object_earth};
-planet mars_properties{mars_model, planet_o, "Mars", 0.3f, 3, 14.0f, 0.4588, 0.4549, 0.1255, texture_object_mars};
-planet jupiter_properties{jupiter_model, planet_o, "Jupiter", 1.6f, 4, 20.0f, 0.5490, 0.3882, 0.1098, texture_object_jupiter};
-planet saturn_properties{saturn_model, planet_o, "Saturn", 1.2f, 5, 30.0f, 0.6784, 0.6039, 0.0275, texture_object_saturn};
-planet uranus_properties{uranus_model, planet_o, "Uranus", 0.8f, 6, 38.0f, 0.0f, 0.3333, 0.8, texture_object_uranus};
-planet neptune_properties{neptune_model, planet_o, "Neptune", 0.6f, 7, 45.0f, 0.0471, 0.5490, 0.6588, texture_object_neptune};
-planet sun_properties{sun_model, planet_o, "Sun", 1.5f, 0, 0.0f, 0.9882, 0.5608, 0.2980, texture_object_sun};
+planet mercury_properties{mercury_model, planet_o, "Mercury",  0.3f, 0, 2.0f, 0.4314, 0.5412, 0.4941, texture_object_mercury, bumpmap_mercury};
+planet venus_properties{venus_model, planet_o, "Venus", 0.4f, 1, 6.0f, 0.5686, 0.3529, 0.0f, texture_object_venus, bumpmap_venus};
+planet earth_properties{earth_model, planet_o, "Earth", 0.5f, 2, 9.0f, 0.2824, 0.2706, 0.6902, texture_object_earth, bumpmap_earth};
+planet mars_properties{mars_model, planet_o, "Mars", 0.3f, 3, 14.0f, 0.4588, 0.4549, 0.1255, texture_object_mars, bumpmap_mars};
+planet jupiter_properties{jupiter_model, planet_o, "Jupiter", 1.6f, 4, 20.0f, 0.5490, 0.3882, 0.1098, texture_object_jupiter, bumpmap_jupiter};
+planet saturn_properties{saturn_model, planet_o, "Saturn", 1.2f, 5, 30.0f, 0.6784, 0.6039, 0.0275, texture_object_saturn, bumpmap_saturn};
+planet uranus_properties{uranus_model, planet_o, "Uranus", 0.8f, 6, 38.0f, 0.0f, 0.3333, 0.8, texture_object_uranus, bumpmap_uranus};
+planet neptune_properties{neptune_model, planet_o, "Neptune", 0.6f, 7, 45.0f, 0.0471, 0.5490, 0.6588, texture_object_neptune, bumpmap_neptune};
+planet sun_properties{sun_model, planet_o, "Sun", 1.5f, 0, 0.0f, 0.9882, 0.5608, 0.2980, texture_object_sun, bumpmap_sun};
 //speed and distance of the Moon is equal to the speed and distance of the Earth
-planet moon_properties{moon_model, planet_o, "Moon", 0.3f, 2, 9.0f, 0.6118, 0.6118, 0.6118, texture_object_moon};
+planet moon_properties{moon_model, planet_o, "Moon", 0.3f, 2, 9.0f, 0.6118, 0.6118, 0.6118, texture_object_moon, bumpmap_moon};
 //the "Universe"(skydome) needs to "wrap" the most distant planet (Neptune - 50.0f) too, so that's why its size is set to 70.0f
-planet universe_properties{universe_model, planet_o, "Universe", 50.0f, 0, 0.0f, 0.0f, 0.0f, 0.0f, texture_object_universe};
+planet universe_properties{universe_model, planet_o, "Universe", 50.0f, 0, 0.0f, 0.0f, 0.0f, 0.0f, texture_object_universe, bumpmap_universe};
 //appropriate container to store the planets with their properties
 planet properties[11] = {mercury_properties, venus_properties, earth_properties, mars_properties, jupiter_properties, saturn_properties, uranus_properties, neptune_properties, sun_properties, moon_properties, universe_properties};
 
@@ -225,6 +239,13 @@ void ApplicationSolar::render() const
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, properties[i].texture.handle);
         glUniform1i(m_shaders.at("planet").u_locs.at("ColorTex"), 0);
+	//displacement mapping for Mercury and Earth
+	if (i == 0 || i == 2)
+	{
+	  glActiveTexture(GL_TEXTURE1);
+	  glBindTexture(GL_TEXTURE_2D, properties[i].bumpmap.handle);
+	  glUniform1i(m_shaders.at("displacement").u_locs.at("displacementMap"), 0);
+	}
         upload_planet_transforms(properties[i]);
         glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ModelMatrix"),
                        1, GL_FALSE, glm::value_ptr(model_matrix));
@@ -472,6 +493,8 @@ void ApplicationSolar::update_textures()
     texture_sun = texture_loader::file(m_resource_path + "textures/sunmap.png");
     texture_moon = texture_loader::file(m_resource_path + "textures/moonmap1k.png");
     texture_universe = texture_loader::file(m_resource_path + "textures/universe.png");
+    bumpmap_data_mercury = texture_loader::file(m_resource_path + "textures/mercurybump.png");
+    bumpmap_data_earth = texture_loader::file(m_resource_path + "textures/earthbump1k.png");
     
     properties[0].texture = utils::create_texture_object(texture_mercury);
     properties[1].texture = utils::create_texture_object(texture_venus);
@@ -484,6 +507,8 @@ void ApplicationSolar::update_textures()
     properties[8].texture = utils::create_texture_object(texture_sun);
     properties[9].texture = utils::create_texture_object(texture_moon);
     properties[10].texture = utils::create_texture_object(texture_universe);
+    properties[0].bumpmap = utils::create_texture_object(bumpmap_data_mercury);
+    properties[2].bumpmap = utils::create_texture_object(bumpmap_data_earth);
 }
 
 // load shader programs
@@ -496,6 +521,8 @@ void ApplicationSolar::initializeShaderPrograms()
         m_resource_path + "shaders/stars.frag"});
   m_shaders.emplace("screenquad", shader_program{m_resource_path + "shaders/screenquad.vert",
         m_resource_path + "shaders/screenquad.frag"});
+  m_shaders.emplace("displacement", shader_program{m_resource_path + "shaders/displacement.vert",
+        m_resource_path + "shaders/displacement.frag"});
   // request uniform locations for shader program
   m_shaders.at("planet").u_locs["NormalMatrix"] = -1;
   m_shaders.at("planet").u_locs["ModelMatrix"] = -1;
@@ -514,6 +541,8 @@ void ApplicationSolar::initializeShaderPrograms()
   m_shaders.at("screenquad").u_locs["mirror_horiz"] = -1;
   m_shaders.at("screenquad").u_locs["mirror_vert"] = -1;
   m_shaders.at("screenquad").u_locs["gaus_blur"] = -1;
+  m_shaders.at("displacement").u_locs["displacementMap"] = -1;
+  m_shaders.at("displacement").u_locs["colorMap"] = -1;
 }
 
 // load models
