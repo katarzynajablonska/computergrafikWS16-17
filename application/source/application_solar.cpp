@@ -242,10 +242,12 @@ void ApplicationSolar::render() const
 	//displacement mapping for Mercury and Earth
 	if (i == 0 || i == 2)
 	{
+	  glUseProgram(m_shaders.at("displacement").handle);
 	  glActiveTexture(GL_TEXTURE1);
 	  glBindTexture(GL_TEXTURE_2D, properties[i].bumpmap.handle);
 	  glUniform1i(m_shaders.at("displacement").u_locs.at("displacementMap"), 0);
 	}
+	glUseProgram(m_shaders.at("planet").handle);
         upload_planet_transforms(properties[i]);
         glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ModelMatrix"),
                        1, GL_FALSE, glm::value_ptr(model_matrix));
