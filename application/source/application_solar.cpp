@@ -245,7 +245,7 @@ void ApplicationSolar::render() const
 	  glUseProgram(m_shaders.at("displacement").handle);
 	  glActiveTexture(GL_TEXTURE1);
 	  glBindTexture(GL_TEXTURE_2D, properties[i].bumpmap.handle);
-	  glUniform1i(m_shaders.at("displacement").u_locs.at("displacementMap"), 0);
+	  glUniform1i(m_shaders.at("displacement").u_locs.at("displacementMap"), 1);
 	}
 	glUseProgram(m_shaders.at("planet").handle);
         upload_planet_transforms(properties[i]);
